@@ -10,7 +10,7 @@ public sealed class EventResourceValidationTests
         Description = "The test event.",
         Location = "Novi Sad, Serbia",
         StartTime = DateTime.UtcNow.Date.AddDays(2),
-        EndTime = DateTime.UtcNow
+        EndTime = DateTime.UtcNow.Date.AddDays(3)
     };
 
     [Theory]

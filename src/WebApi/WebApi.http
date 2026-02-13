@@ -8,7 +8,8 @@ Content-Type: application/json
   "name": "Test",
   "description": "Test event.",
   "location": "Novi Sad, Serbia",
-  "startTime": "{{$datetime iso8601 2 d}}"
+  "startTime": "{{$datetime iso8601 2 d}}",
+  "endTime": "{{$datetime iso8601 3 d}}"
 }
 
 ###

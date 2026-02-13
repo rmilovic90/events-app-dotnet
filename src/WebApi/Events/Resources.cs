@@ -26,7 +26,7 @@ public sealed class Event
     [DateMinDaysInTheFuture(1)]
     public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
-    // TODO: Ensure that end time is after start time (event must last at least N period).
     [Required]
+    [DateAfter(nameof(StartTime))]
     public DateTime EndTime { get; set; } = DateTime.UtcNow;
 }

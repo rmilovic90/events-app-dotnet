@@ -14,7 +14,7 @@ public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) 
         Description = "The test event.",
         Location = "Novi Sad, Serbia",
         StartTime = DateTime.UtcNow.Date.AddDays(2),
-        EndTime = DateTime.UtcNow
+        EndTime = DateTime.UtcNow.Date.AddDays(3)
     };
 
     private readonly HttpClient _httpClient = factory.CreateClient();
@@ -44,7 +44,8 @@ public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) 
             () => Assert.Contains(nameof(Event.Name), responseBody.Errors),
             () => Assert.Contains(nameof(Event.Description), responseBody.Errors),
             () => Assert.Contains(nameof(Event.Location), responseBody.Errors),
-            () => Assert.Contains(nameof(Event.StartTime), responseBody.Errors)
+            () => Assert.Contains(nameof(Event.StartTime), responseBody.Errors),
+            () => Assert.Contains(nameof(Event.EndTime), responseBody.Errors)
         );
     }
 
