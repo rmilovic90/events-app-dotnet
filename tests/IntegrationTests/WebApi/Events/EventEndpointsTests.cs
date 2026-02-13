@@ -32,7 +32,12 @@ public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) 
     [Fact]
     public async Task Post_ReturnsValidationErrorsInResponseBody_WhenResourceIsInvalid()
     {
-        Event invalidEvent = new();
+        DateTime now = DateTime.UtcNow;
+        Event invalidEvent = new()
+        {
+            StartTime = now,
+            EndTime = now
+        };
 
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.CreateRoute, invalidEvent, TestContext.Current.CancellationToken);
 
