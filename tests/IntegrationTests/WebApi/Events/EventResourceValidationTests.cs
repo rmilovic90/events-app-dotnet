@@ -9,7 +9,7 @@ public sealed class EventResourceValidationTests
         Name = "Test",
         Description = "The test event.",
         Location = "Novi Sad, Serbia",
-        StartTime = DateTime.UtcNow,
+        StartTime = DateTime.UtcNow.Date.AddDays(2),
         EndTime = DateTime.UtcNow
     };
 
@@ -146,6 +146,27 @@ public sealed class EventResourceValidationTests
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
         Assert.Single(validationResult.MemberNames, nameof(ValidEvent.Location));
+    }
+
+    [Fact]
+    public void Validation_Fails_WhenStartTimeIsNotAtLeastOneDayInTheFuture()
+    {
+        Event invalidEvent = ValidEvent;
+        invalidEvent.StartTime = DateTime.UtcNow;
+
+        List<ValidationResult> validationResults = [];
+
+        bool isValid = Validator.TryValidateObject
+        (
+            invalidEvent,
+            new ValidationContext(invalidEvent),
+            validationResults,
+            validateAllProperties: true
+        );
+
+        Assert.False(isValid);
+        ValidationResult validationResult = Assert.Single(validationResults);
+        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.StartTime));
     }
 
     [Fact]

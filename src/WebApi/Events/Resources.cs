@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+using Events.WebApi.Common.Validation;
+
 namespace Events.WebApi.Events;
 
 public sealed class Event
@@ -20,8 +22,8 @@ public sealed class Event
     [MaxLength(MaxAllowedLocationLength)]
     public string Location { get; set; } = null!;
 
-    // TODO: Ensure that start time is in the future (event must be scheduled at least N period upfront).
     [Required]
+    [DateMinDaysInTheFuture(1)]
     public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
     // TODO: Ensure that end time is after start time (event must last at least N period).
