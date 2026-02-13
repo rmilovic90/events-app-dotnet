@@ -28,5 +28,11 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test --configuration Release --no-build
+    - name: Run unit tests
+      run: dotnet test --project tests/UnitTests/UnitTests.csproj --configuration Release --no-build
+
+    - name: Run integration tests
+      run: dotnet test --project tests/IntegrationTests/IntegrationTests.csproj --configuration Release --no-build
+
+    - name: Run functional tests
+      run: dotnet test --project tests/FunctionalTests/FunctionalTests.csproj --configuration Release --no-build
