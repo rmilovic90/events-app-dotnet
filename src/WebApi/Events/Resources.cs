@@ -23,7 +23,7 @@ public sealed class Event
     public string Location { get; set; } = null!;
 
     [Required]
-    [DateMinDaysInTheFuture(1)]
+    [DateInFuture]
     public DateTime StartTime { get; set; } = DateTime.UtcNow;
 
     [Required]
