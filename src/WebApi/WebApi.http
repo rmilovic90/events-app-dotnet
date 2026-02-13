@@ -1,1 +1,13 @@
-@WebApi_HostAddress = http://localhost:5022
+@WebApi_HostAddress = http://localhost:5022/api
+
+POST {{WebApi_HostAddress}}/events
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Test",
+  "description": "Test event.",
+  "location": "Novi Sad, Serbia"
+}
+
+###
