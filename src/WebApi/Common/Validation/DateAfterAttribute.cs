@@ -22,29 +22,36 @@ internal sealed class DateAfterAttribute : ValidationAttribute
     {
         if (value is null) return ValidationResult.Success;
 
-        if (value is not DateTime dateTimeValue)
-            throw new InvalidOperationException($"{nameof(DateAfterAttribute)} can only be applied to properties of type {nameof(DateTime)}.");
+        DateTime utcDateTimeValue = GetUtcDateTimeFromValue(value);
+        DateTime utcComparisonDateDateTimeValue = GetUtcDateTimeFromComparisonDateProperty(validationContext);
 
+        return utcDateTimeValue <= utcComparisonDateDateTimeValue
+            ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName), new[] { validationContext.MemberName! })
+            : ValidationResult.Success;
+    }
+
+    private static DateTime GetUtcDateTimeFromValue(object value)
+    {
+        DateTime? dateTimeValue = value is DateTime dateTime ? dateTime : null;
+        DateTimeOffset? dateTimeOffsetValue = value is DateTimeOffset dateTimeOffset ? dateTimeOffset : null;
+
+        return (dateTimeValue?.ToUniversalTime() ?? dateTimeOffsetValue?.ToUniversalTime().DateTime)
+            ?? throw new InvalidOperationException($"{nameof(DateAfterAttribute)} can only be applied to values of type {nameof(DateTime)} && {nameof(DateTimeOffset)}.");
+    }
+
+    private DateTime GetUtcDateTimeFromComparisonDateProperty(ValidationContext validationContext)
+    {
         PropertyInfo comparisonDateProperty = validationContext.ObjectInstance.GetType().GetProperty(_comparisonDatePropertyName)
             ?? throw new InvalidOperationException($"{nameof(DateAfterAttribute)} comparison property {_comparisonDatePropertyName} does not exist.");
 
         object comparisonDatePropertyValue = comparisonDateProperty.GetValue(validationContext.ObjectInstance)
             ?? throw new InvalidOperationException($"{nameof(DateAfterAttribute)} comparison property {_comparisonDatePropertyName} must have a value.");
 
-        if (comparisonDatePropertyValue is not DateTime comparisonDatePropertyDateTimeValue)
-            throw new InvalidOperationException($"{nameof(DateAfterAttribute)} comparison property {_comparisonDatePropertyName} must be of type {nameof(DateTime)}.");
+        DateTime? comparisonDateTimeValue = comparisonDatePropertyValue is DateTime comparisonDateTime ? comparisonDateTime : null;
+        DateTimeOffset? comparisonDateTimeOffsetValue = comparisonDatePropertyValue is DateTimeOffset comparisonDateTimeOffset ? comparisonDateTimeOffset : null;
 
-        DateTime dateTimeValueInUtc = dateTimeValue.Kind == DateTimeKind.Utc
-            ? dateTimeValue
-            : dateTimeValue.ToUniversalTime();
-
-        DateTime comparisonDatePropertyDateTimeValueInUtc = comparisonDatePropertyDateTimeValue.Kind == DateTimeKind.Utc
-            ? comparisonDatePropertyDateTimeValue
-            : comparisonDatePropertyDateTimeValue.ToUniversalTime();
-
-        return dateTimeValueInUtc <= comparisonDatePropertyDateTimeValueInUtc
-            ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName), new[] { validationContext.MemberName! })
-            : ValidationResult.Success;
+        return (comparisonDateTimeValue?.ToUniversalTime() ?? comparisonDateTimeOffsetValue?.ToUniversalTime().DateTime)
+            ?? throw new InvalidOperationException($"{nameof(DateAfterAttribute)} comparison property {_comparisonDatePropertyName} must be of type {nameof(DateTime)} or {nameof(DateTimeOffset)}.");
     }
 
     public override string FormatErrorMessage(string name) =>

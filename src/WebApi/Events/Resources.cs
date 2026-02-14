@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 using Events.WebApi.Common.Validation;
@@ -24,9 +25,11 @@ public sealed class Event
 
     [Required]
     [DateInFuture]
-    public DateTime StartTime { get; set; } = DateTime.UtcNow;
+    [Description("Local start time of the event. Must be in the future.")]
+    public DateTimeOffset StartTime { get; set; } = DateTimeOffset.UtcNow;
 
     [Required]
     [DateAfter(nameof(StartTime))]
-    public DateTime EndTime { get; set; } = DateTime.UtcNow;
+    [Description("Local end time of the event. Must be after start time.")]
+    public DateTimeOffset EndTime { get; set; } = DateTimeOffset.UtcNow;
 }

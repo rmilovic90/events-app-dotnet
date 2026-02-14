@@ -8,13 +8,16 @@ namespace Events.WebApi.Events;
 
 public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
+    private static readonly DateTime _utcTomorrow = DateTime.UtcNow.Date.AddDays(1);
+    private static readonly TimeZoneInfo _centralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+
     private static Event ValidEvent => new()
     {
         Name = "Test",
         Description = "The test event.",
         Location = "Novi Sad, Serbia",
-        StartTime = DateTime.UtcNow.Date.AddDays(2),
-        EndTime = DateTime.UtcNow.Date.AddDays(3)
+        StartTime = new DateTimeOffset(_utcTomorrow.Year, _utcTomorrow.Month, _utcTomorrow.Day, 14, 0, 0, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow)),
+        EndTime = new DateTimeOffset(_utcTomorrow.Year, _utcTomorrow.Month, _utcTomorrow.Day, 15, 0, 0, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow))
     };
 
     private readonly HttpClient _httpClient = factory.CreateClient();

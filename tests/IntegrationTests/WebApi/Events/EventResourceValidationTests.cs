@@ -4,13 +4,16 @@ namespace Events.WebApi.Events;
 
 public sealed class EventResourceValidationTests
 {
+    private static readonly DateTime _utcTomorrow = DateTime.UtcNow.Date.AddDays(1);
+    private static readonly TimeZoneInfo _centralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+
     private static Event ValidEvent => new()
     {
         Name = "Test",
         Description = "The test event.",
         Location = "Novi Sad, Serbia",
-        StartTime = DateTime.UtcNow.Date.AddDays(2),
-        EndTime = DateTime.UtcNow.Date.AddDays(3)
+        StartTime = new DateTimeOffset(_utcTomorrow.Year, _utcTomorrow.Month, _utcTomorrow.Day, 14, 0, 0, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow)),
+        EndTime = new DateTimeOffset(_utcTomorrow.Year, _utcTomorrow.Month, _utcTomorrow.Day, 15, 0, 0, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow))
     };
 
     [Theory]
@@ -149,10 +152,11 @@ public sealed class EventResourceValidationTests
     }
 
     [Fact]
-    public void Validation_Fails_WhenStartTimeIsNotAtLeastOneDayInTheFuture()
+    public void Validation_Fails_WhenStartTimeIsNotInTheFuture()
     {
+        DateTime utcNow = DateTime.UtcNow;
         Event invalidEvent = ValidEvent;
-        invalidEvent.StartTime = DateTime.UtcNow;
+        invalidEvent.StartTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow)).AddHours(-1);
 
         List<ValidationResult> validationResults = [];
 
@@ -167,6 +171,29 @@ public sealed class EventResourceValidationTests
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
         Assert.Single(validationResult.MemberNames, nameof(ValidEvent.StartTime));
+    }
+
+    [Fact]
+    public void Validation_Fails_WhenEndTimeIsNotAfterStartTime()
+    {
+        DateTime utcNow = DateTime.UtcNow;
+        Event invalidEvent = ValidEvent;
+        invalidEvent.StartTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow)).AddDays(1);
+        invalidEvent.EndTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow));
+
+        List<ValidationResult> validationResults = [];
+
+        bool isValid = Validator.TryValidateObject
+        (
+            invalidEvent,
+            new ValidationContext(invalidEvent),
+            validationResults,
+            validateAllProperties: true
+        );
+
+        Assert.False(isValid);
+        ValidationResult validationResult = Assert.Single(validationResults);
+        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.EndTime));
     }
 
     [Fact]

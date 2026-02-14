@@ -10,21 +10,18 @@ internal sealed class DateInFutureAttribute : ValidationAttribute
 
     public DateInFutureAttribute(string errorMessage) : base(errorMessage) { }
 
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-    {
-        if (value is null) return ValidationResult.Success;
-
-        if (value is not DateTime dateTimeValue)
-            throw new InvalidOperationException($"{nameof(DateInFutureAttribute)} can only be applied to values of type {nameof(DateTime)}.");
-
-        DateTime now = dateTimeValue.Kind == DateTimeKind.Utc
-            ? DateTime.UtcNow
-            : DateTime.Now;
-
-        return dateTimeValue <= now
-            ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName), new[] { validationContext.MemberName! })
-            : ValidationResult.Success;
-    }
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext) =>
+        value switch
+        {
+            null => ValidationResult.Success,
+            DateTime dateTimeValue => dateTimeValue.ToUniversalTime() <= DateTime.UtcNow
+                ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName), new[] { validationContext.MemberName! })
+                : ValidationResult.Success,
+            DateTimeOffset dateTimeOffsetValue => dateTimeOffsetValue.ToUniversalTime() <= DateTimeOffset.UtcNow
+                ? new ValidationResult(FormatErrorMessage(validationContext.DisplayName), new[] { validationContext.MemberName! })
+                : ValidationResult.Success,
+            _ => throw new InvalidOperationException($"{nameof(DateInFutureAttribute)} can only be applied to values of type {nameof(DateTime)} or {nameof(DateTimeOffset)}.")
+        };
 
     public override string FormatErrorMessage(string name) =>
         string.Format(ErrorMessageString, name);
