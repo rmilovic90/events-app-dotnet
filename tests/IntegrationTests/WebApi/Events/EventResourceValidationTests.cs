@@ -37,7 +37,7 @@ public sealed class EventResourceValidationTests
 
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
-        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.Name));
+        Assert.Single(validationResult.MemberNames, nameof(Event.Name));
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public sealed class EventResourceValidationTests
 
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
-        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.Name));
+        Assert.Single(validationResult.MemberNames, nameof(Event.Name));
     }
 
     [Theory]
@@ -82,7 +82,7 @@ public sealed class EventResourceValidationTests
 
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
-        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.Description));
+        Assert.Single(validationResult.MemberNames, nameof(Event.Description));
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class EventResourceValidationTests
 
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
-        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.Description));
+        Assert.Single(validationResult.MemberNames, nameof(Event.Description));
     }
 
     [Theory]
@@ -127,7 +127,7 @@ public sealed class EventResourceValidationTests
 
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
-        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.Location));
+        Assert.Single(validationResult.MemberNames, nameof(Event.Location));
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public sealed class EventResourceValidationTests
 
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
-        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.Location));
+        Assert.Single(validationResult.MemberNames, nameof(Event.Location));
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public sealed class EventResourceValidationTests
 
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
-        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.StartTime));
+        Assert.Single(validationResult.MemberNames, nameof(Event.StartTime));
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public sealed class EventResourceValidationTests
 
         Assert.False(isValid);
         ValidationResult validationResult = Assert.Single(validationResults);
-        Assert.Single(validationResult.MemberNames, nameof(ValidEvent.EndTime));
+        Assert.Single(validationResult.MemberNames, nameof(Event.EndTime));
     }
 
     [Fact]

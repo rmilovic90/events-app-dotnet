@@ -1,12 +1,12 @@
 using System.Net.Mime;
 
-using RootEventEndpoints = Events.WebApi.Endpoints;
+using RootEndpoints = Events.WebApi.Endpoints;
 
 namespace Events.WebApi.Events;
 
 internal static class Endpoints
 {
-    private const string BaseRoute = $"{RootEventEndpoints.ApiBaseRoute}/events";
+    private const string BaseRoute = $"{RootEndpoints.ApiBaseRoute}/events";
     internal const string CreateRoute = BaseRoute;
 
     private static IResult Create(Event @event) => TypedResults.Created();

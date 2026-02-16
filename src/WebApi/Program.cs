@@ -2,20 +2,17 @@ using Events.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddValidation();
-builder.Services.AddOpenApi();
+builder.Services.ConfigureOpenApi();
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "Events API v1");
-    });
+    app.UseOpenApi();
 }
 
-app.UseHttpsRedirection();
 app.RegisterAllEndpoints();
 
 app.Run();

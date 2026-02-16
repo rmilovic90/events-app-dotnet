@@ -8,22 +8,22 @@ namespace Events.WebApi.Events;
 
 public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
-    private static readonly DateTime _utcTomorrow = DateTime.UtcNow.Date.AddDays(1);
-    private static readonly TimeZoneInfo _centralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.Date.AddDays(1);
+    private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
 
-    private static Event ValidEvent => new()
+    private static readonly Event ValidEvent = new()
     {
         Name = "Test",
         Description = "The test event.",
         Location = "Novi Sad, Serbia",
-        StartTime = new DateTimeOffset(_utcTomorrow.Year, _utcTomorrow.Month, _utcTomorrow.Day, 14, 0, 0, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow)),
-        EndTime = new DateTimeOffset(_utcTomorrow.Year, _utcTomorrow.Month, _utcTomorrow.Day, 15, 0, 0, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow))
+        StartTime = new DateTimeOffset(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 14, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)),
+        EndTime = new DateTimeOffset(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 15, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow))
     };
 
     private readonly HttpClient _httpClient = factory.CreateClient();
 
     [Fact]
-    public async Task Post_ReturnsResponseWithBadRequestStatusCode_WhenResourceIsInvalid()
+    public async Task PostEvent_ReturnsResponseWithBadRequestStatusCode_WhenResourceIsInvalid()
     {
         Event invalidEvent = new();
 
@@ -33,7 +33,7 @@ public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) 
     }
 
     [Fact]
-    public async Task Post_ReturnsValidationErrorsInResponseBody_WhenResourceIsInvalid()
+    public async Task PostEvent_ReturnsValidationErrorsInResponseBody_WhenResourceIsInvalid()
     {
         DateTime now = DateTime.UtcNow;
         Event invalidEvent = new()
@@ -58,7 +58,7 @@ public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) 
     }
 
     [Fact]
-    public async Task Post_ReturnsResponseWithCreatedStatusCode_WhenResourceIsValid()
+    public async Task PostEvent_ReturnsResponseWithCreatedStatusCode_WhenResourceIsValid()
     {
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.CreateRoute, ValidEvent, TestContext.Current.CancellationToken);
 
