@@ -2,6 +2,7 @@ using System.Net.Mime;
 using System.Security.Claims;
 using System.Text;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,15 +17,15 @@ internal static class Endpoints
 
     private static IResult GenerateToken(TokenRequest tokenRequest, IConfiguration config)
     {
-        SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
+        SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(config["JWT:Key"]!));
 
         string token = new JsonWebTokenHandler()
             .CreateToken
             (
                 new SecurityTokenDescriptor()
                 {
-                    Issuer = config["Jwt:Issuer"],
-                    Audience = config["Jwt:Audience"],
+                    Issuer = config["JWT:Issuer"],
+                    Audience = config["JWT:Audience"],
                     Subject = new ClaimsIdentity([new Claim(ClaimTypes.Name, tokenRequest.Username)]),
                     Expires = DateTime.Now.AddSeconds(Token.DefaultExpirationInSeconds),
                     SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256)
@@ -37,7 +38,7 @@ internal static class Endpoints
     public static IEndpointRouteBuilder RegisterAuthenticationEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapPost(GenerateTokenRoute, GenerateToken)
-            .WithDescription($"Generate authentication token of type {Token.BearerTokenType}.")
+            .WithDescription($"Generate authentication token of type {JwtBearerDefaults.AuthenticationScheme}.")
             .WithTags("Authentication")
             .Produces(StatusCodes.Status200OK, typeof(Token), MediaTypeNames.Application.Json)
             .Produces(StatusCodes.Status400BadRequest, contentType: MediaTypeNames.Application.ProblemJson);

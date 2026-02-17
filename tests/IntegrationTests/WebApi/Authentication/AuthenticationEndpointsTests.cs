@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -62,7 +63,7 @@ public sealed class AuthenticationEndpointsTests(WebApplicationFactory<Program> 
         Assert.Multiple
         (
             () => Assert.NotEmpty(token.AccessToken),
-            () => Assert.Equal(Token.BearerTokenType, token.TokenType),
+            () => Assert.Equal(JwtBearerDefaults.AuthenticationScheme, token.TokenType),
             () => Assert.Equal(Token.DefaultExpirationInSeconds, token.ExpiresIn)
         );
     }

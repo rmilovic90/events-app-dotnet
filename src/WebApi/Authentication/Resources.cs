@@ -2,6 +2,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 namespace Events.WebApi.Authentication;
 
 public sealed class TokenRequest
@@ -17,13 +19,11 @@ public sealed class Token
 {
     public static readonly int DefaultExpirationInSeconds = 1800;
 
-    public const string BearerTokenType = "Bearer";
-
     internal static Token BearerWithDefaultExpiration(string value) =>
         new()
         {
             AccessToken = value,
-            TokenType = BearerTokenType,
+            TokenType = JwtBearerDefaults.AuthenticationScheme,
             ExpiresIn = DefaultExpirationInSeconds
         };
 

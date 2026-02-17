@@ -1,8 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Events.WebApi.Events;
 
@@ -20,7 +23,19 @@ public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) 
         EndTime = new DateTimeOffset(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 15, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow))
     };
 
-    private readonly HttpClient _httpClient = factory.CreateClient();
+    private readonly HttpClient _httpClient = factory.WithWebHostBuilder
+    (
+        builder => builder.ConfigureTestServices
+        (
+            services => services.AddAuthentication(TestAuthHandler.TestAuthenticationScheme)
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>
+                (
+                    TestAuthHandler.TestAuthenticationScheme,
+                    options => { }
+                )
+        )
+    )
+    .CreateClient();
 
     [Fact]
     public async Task PostEvent_ReturnsResponseWithBadRequestStatusCode_WhenResourceIsInvalid()

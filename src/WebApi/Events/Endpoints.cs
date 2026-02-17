@@ -14,10 +14,12 @@ internal static class Endpoints
     public static IEndpointRouteBuilder RegisterEventsEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapPost(CreateRoute, Create)
+            .RequireAuthorization()
             .WithDescription("Creates a new event.")
             .WithTags("Events")
             .Produces(StatusCodes.Status201Created, contentType: MediaTypeNames.Application.Json)
-            .Produces(StatusCodes.Status400BadRequest, contentType: MediaTypeNames.Application.ProblemJson);
+            .Produces(StatusCodes.Status400BadRequest, contentType: MediaTypeNames.Application.ProblemJson)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         return endpoints;
     }

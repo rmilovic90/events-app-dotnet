@@ -1,8 +1,21 @@
 @WebApi_HostAddress = http://localhost:5022/api
 
+# @name generateAuthToken
+POST {{WebApi_HostAddress}}/authentication/token
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+###
+
 POST {{WebApi_HostAddress}}/events
 Accept: application/json
 Content-Type: application/json
+Authorization: Bearer {{generateAuthToken.response.body.$.access_token}}
 
 {
   "name": "Test",
