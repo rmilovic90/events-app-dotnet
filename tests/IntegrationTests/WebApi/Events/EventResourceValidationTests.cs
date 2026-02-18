@@ -1,19 +1,21 @@
 using System.ComponentModel.DataAnnotations;
 
+using Events.Domain.Events;
+
 namespace Events.WebApi.Events;
 
 public sealed class EventResourceValidationTests
 {
-    private static readonly DateTime _utcTomorrow = DateTime.UtcNow.Date.AddDays(1);
-    private static readonly TimeZoneInfo _centralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.Date.AddDays(1);
+    private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
 
     private static Event ValidEvent => new()
     {
         Name = "Test",
         Description = "The test event.",
         Location = "Novi Sad, Serbia",
-        StartTime = new DateTimeOffset(_utcTomorrow.Year, _utcTomorrow.Month, _utcTomorrow.Day, 14, 0, 0, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow)),
-        EndTime = new DateTimeOffset(_utcTomorrow.Year, _utcTomorrow.Month, _utcTomorrow.Day, 15, 0, 0, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow))
+        StartTime = new DateTimeOffset(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 14, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)),
+        EndTime = new DateTimeOffset(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 15, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow))
     };
 
     [Theory]
@@ -44,7 +46,7 @@ public sealed class EventResourceValidationTests
     public void Validation_Fails_WhenNameIsTooLong()
     {
         Event invalidEvent = ValidEvent;
-        invalidEvent.Name = new string('*', Event.MaxAllowedNameLength + 1);
+        invalidEvent.Name = new string('*', Name.MaxLength + 1);
 
         List<ValidationResult> validationResults = [];
 
@@ -89,7 +91,7 @@ public sealed class EventResourceValidationTests
     public void Validation_Fails_WhenDescriptionIsTooLong()
     {
         Event invalidEvent = ValidEvent;
-        invalidEvent.Description = new string('*', Event.MaxAllowedDescriptionLength + 1);
+        invalidEvent.Description = new string('*', Description.MaxLength + 1);
 
         List<ValidationResult> validationResults = [];
 
@@ -134,7 +136,7 @@ public sealed class EventResourceValidationTests
     public void Validation_Fails_WhenLocationIsTooLong()
     {
         Event invalidEvent = ValidEvent;
-        invalidEvent.Location = new string('*', Event.MaxAllowedLocationLength + 1);
+        invalidEvent.Location = new string('*', Location.MaxLength + 1);
 
         List<ValidationResult> validationResults = [];
 
@@ -156,7 +158,7 @@ public sealed class EventResourceValidationTests
     {
         DateTime utcNow = DateTime.UtcNow;
         Event invalidEvent = ValidEvent;
-        invalidEvent.StartTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow)).AddHours(-1);
+        invalidEvent.StartTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)).AddHours(-1);
 
         List<ValidationResult> validationResults = [];
 
@@ -178,8 +180,8 @@ public sealed class EventResourceValidationTests
     {
         DateTime utcNow = DateTime.UtcNow;
         Event invalidEvent = ValidEvent;
-        invalidEvent.StartTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow)).AddDays(1);
-        invalidEvent.EndTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, _centralEuropeanTimeZone.GetUtcOffset(_utcTomorrow));
+        invalidEvent.StartTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)).AddDays(1);
+        invalidEvent.EndTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow));
 
         List<ValidationResult> validationResults = [];
 

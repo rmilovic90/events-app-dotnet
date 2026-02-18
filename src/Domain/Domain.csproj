@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Events.Domain</AssemblyName>
+    <RootNamespace>Events.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

@@ -3,24 +3,24 @@ using System.ComponentModel.DataAnnotations;
 
 using Events.WebApi.Common.Validation;
 
+using EventDescription = Events.Domain.Events.Description;
+using EventLocation = Events.Domain.Events.Location;
+using EventName = Events.Domain.Events.Name;
+
 namespace Events.WebApi.Events;
 
 public sealed class Event
 {
-    public const int MaxAllowedNameLength = 50;
-    public const int MaxAllowedDescriptionLength = 200;
-    public const int MaxAllowedLocationLength = 100;
-
     [Required]
-    [MaxLength(MaxAllowedNameLength)]
+    [MaxLength(EventName.MaxLength)]
     public string Name { get; set; } = null!;
 
     [Required]
-    [MaxLength(MaxAllowedDescriptionLength)]
+    [MaxLength(EventDescription.MaxLength)]
     public string Description { get; set; } = null!;
 
     [Required]
-    [MaxLength(MaxAllowedLocationLength)]
+    [MaxLength(EventLocation.MaxLength)]
     public string Location { get; set; } = null!;
 
     [Required]
