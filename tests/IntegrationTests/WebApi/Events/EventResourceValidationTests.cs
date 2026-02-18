@@ -6,7 +6,7 @@ namespace Events.WebApi.Events;
 
 public sealed class EventResourceValidationTests
 {
-    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.Date.AddDays(1);
+    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.AddDays(1);
     private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
 
     private static Event ValidEvent => new()

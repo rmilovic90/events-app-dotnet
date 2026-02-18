@@ -4,9 +4,9 @@ namespace Events.Domain.Events;
 
 public sealed class EventTests
 {
-    private static readonly DateTime UtcNow = DateTime.UtcNow;
-    private static readonly DateTime UtcTomorrow = UtcNow.Date.AddDays(1);
-    private static readonly DateTime UtcDayAfterTomorrow = UtcTomorrow.AddDays(1);
+    private static readonly DateTimeOffset UtcNow = DateTimeOffset.UtcNow;
+    private static readonly DateTimeOffset UtcTomorrow = UtcNow.AddDays(1);
+    private static readonly DateTimeOffset UtcDayAfterTomorrow = UtcTomorrow.AddDays(1);
 
     private static readonly Name Name = new("Test");
     private static readonly Description Description = new("Test event.");

@@ -11,7 +11,7 @@ namespace Events.WebApi.Events;
 
 public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
-    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.Date.AddDays(1);
+    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.AddDays(1);
     private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
 
     private static readonly Event ValidEvent = new()
@@ -50,7 +50,7 @@ public sealed class EventEndpointsTests(WebApplicationFactory<Program> factory) 
     [Fact]
     public async Task PostEvent_ReturnsValidationErrorsInResponseBody_WhenResourceIsInvalid()
     {
-        DateTime now = DateTime.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         Event invalidEvent = new()
         {
             StartTime = now,
