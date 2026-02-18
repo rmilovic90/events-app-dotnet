@@ -6,7 +6,6 @@ builder.Services.ConfigureOpenApi();
 builder.Services.ConfigureSecurity(builder.Configuration);
 
 var app = builder.Build();
-app.UseHttpsRedirection();
 if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();
