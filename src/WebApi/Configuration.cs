@@ -1,8 +1,12 @@
 using System.Text;
 
+using Events.Domain.Events;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+
+using EventsRepository = Events.WebApi.Events.Repository;
 
 namespace Events.WebApi;
 
@@ -86,6 +90,15 @@ internal static class Configuration
                 }
             );
         services.AddAuthorization();
+
+        return services;
+    }
+
+    internal static IServiceCollection ConfigureAppServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        string connectionString = configuration.GetConnectionString("Database")
+            ?? throw new InvalidOperationException("Database connection string is not configured.");
+        services.AddTransient<IEventsRepository>(_ => new EventsRepository(connectionString));
 
         return services;
     }

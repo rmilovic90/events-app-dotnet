@@ -24,7 +24,7 @@ internal sealed class Repository : IEventsRepository
         using NpgsqlCommand command = dataSource.CreateCommand();
         command.CommandText =
         """
-        INSERT INTO public."events"("id", "name", "description", "location", "start_time", "start_time_offset", "end_time", "end_time_offset")
+        INSERT INTO events("id", "name", "description", "location", "start_time", "start_time_offset", "end_time", "end_time_offset")
             VALUES (@id, @name, @description, @location, @start_time, @start_time_offset, @end_time, @end_time_offset)
         """;
         command.Parameters.Add(new NpgsqlParameter("id", NpgsqlDbType.Uuid) { Value = Guid.Parse(@event.Id.ToString()) });
