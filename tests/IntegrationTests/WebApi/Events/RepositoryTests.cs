@@ -119,9 +119,9 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
             () => Assert.Equal(eventToSave.Name.ToString(), reader.GetString(reader.GetOrdinal("name"))),
             () => Assert.Equal(eventToSave.Description.ToString(), reader.GetString(reader.GetOrdinal("description"))),
             () => Assert.Equal(eventToSave.Location.ToString(), reader.GetString(reader.GetOrdinal("location"))),
-            () => Assert.Equal(eventToSave.StartTime.Value, reader.GetDateTime(reader.GetOrdinal("start_time"))),
+            () => Assert.Equal(eventToSave.StartTime.Value.DateTime, reader.GetDateTime(reader.GetOrdinal("start_time"))),
             () => Assert.Equal(eventToSave.StartTime.Value.Offset, reader.GetTimeSpan(reader.GetOrdinal("start_time_offset"))),
-            () => Assert.Equal(eventToSave.EndTime.Value, reader.GetDateTime(reader.GetOrdinal("end_time"))),
+            () => Assert.Equal(eventToSave.EndTime.Value.DateTime, reader.GetDateTime(reader.GetOrdinal("end_time"))),
             () => Assert.Equal(eventToSave.EndTime.Value.Offset, reader.GetTimeSpan(reader.GetOrdinal("end_time_offset")))
         );
     }
