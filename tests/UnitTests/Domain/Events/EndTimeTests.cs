@@ -12,7 +12,7 @@ public sealed class EndTimeTests
     public void Create_Fails_WhenBeforeStartTime()
     {
         DateTimeOffset utcYesteday = UtcNow.Date.AddDays(-1);
-        StartTime startTime = StartTime.Of
+        StartTime startTime = StartTime.New
         (
             new DateTimeOffset
             (
@@ -33,7 +33,7 @@ public sealed class EndTimeTests
     [Fact]
     public void Create_Fails_WhenValueIsSameAsStartTime()
     {
-        StartTime startTime = StartTime.Of(UtcTomorrow, new FakeTimeProvider(UtcNow));
+        StartTime startTime = StartTime.New(UtcTomorrow, new FakeTimeProvider(UtcNow));
 
         Assert.Throws<ArgumentException>(() => EndTime.Of(UtcTomorrow, startTime));
     }
@@ -42,7 +42,7 @@ public sealed class EndTimeTests
     public void Create_Succeeds_WhenValueIsAfterStartTime()
     {
         DateTimeOffset utcDayAfterTomorrow = UtcTomorrow.AddDays(1);
-        StartTime startTime = StartTime.Of
+        StartTime startTime = StartTime.New
         (
             new DateTimeOffset
             (

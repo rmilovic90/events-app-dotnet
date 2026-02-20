@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace Events.Domain;
 
@@ -47,6 +48,28 @@ internal static class ExceptionExtensions
             if (condition(argument)) return;
 
             throw new ArgumentException(message, paramName);
+        }
+
+        /// <summary>
+        /// Throws an <see cref="ArgumentException"/> if <paramref name="argument"/> does not match given <paramref name="pattern"/>.
+        /// </summary>
+        /// <param name="argument">Argument which is matched against given <paramref name="pattern"/>.</param>
+        /// <param name="pattern">Regular expression against which <paramref name="argument"/> is matched.</param>
+        /// <param name="paramName">The name of the parameter with which <paramref name="argument"/> corresponds.</param>
+        public static void ThrowIfNotMatched
+        (
+            string argument,
+            Regex pattern,
+            [CallerArgumentExpression(nameof(argument))] string? paramName = null
+        )
+        {
+            if (pattern.IsMatch(argument)) return;
+
+            throw new ArgumentException
+            (
+                $"{argument} does not match '{pattern}' pattern.",
+                paramName
+            );
         }
     }
 }

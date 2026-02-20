@@ -37,6 +37,8 @@ public sealed class Event
         endTime
     );
 
+    private readonly List<Registration> _pendingRegistrations = [];
+
     private Event
     (
         Id id,
@@ -68,6 +70,15 @@ public sealed class Event
     public Location Location { get; }
     public StartTime StartTime { get; }
     public EndTime EndTime { get; }
+
+    public IReadOnlyList<Registration> PendingRegistrations => _pendingRegistrations;
+
+    public void Add(Registration registration)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+
+        _pendingRegistrations.Add(registration);
+    }
 
     public override string ToString() =>
         $"{nameof(Event)} {{ {nameof(Id)} = {Id}, {nameof(Name)} = {Name}, {nameof(Description)} = {Description}, {nameof(Location)} = {Location}, {nameof(StartTime)} = {StartTime}, {nameof(EndTime)} = {EndTime} }}";

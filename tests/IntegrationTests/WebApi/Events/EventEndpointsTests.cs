@@ -138,6 +138,13 @@ public sealed class EventEndpointsTests : IClassFixture<WebApplicationFactory<Pr
     [Fact]
     public async Task PostEvent_ReturnsResponseWithEventBody_WhenResourceIsValid()
     {
+        EventEntity savedEvent = null!;
+        await _repositoryMock.Save
+        (
+            Arg.Do<EventEntity>(@event => savedEvent = @event),
+            Arg.Any<CancellationToken>()
+        );
+
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.CreateRoute, ValidEvent, TestContext.Current.CancellationToken);
 
         EventResource? @event = await response.Content.ReadFromJsonAsync<EventResource>(TestContext.Current.CancellationToken);
@@ -145,12 +152,12 @@ public sealed class EventEndpointsTests : IClassFixture<WebApplicationFactory<Pr
         Assert.NotNull(@event);
         Assert.Multiple
         (
-            () => Assert.NotEmpty(@event.Id!),
-            () => Assert.Equal(Name, @event.Name),
-            () => Assert.Equal(Description, @event.Description),
-            () => Assert.Equal(Location, @event.Location),
-            () => Assert.Equal(StartTime, @event.StartTime),
-            () => Assert.Equal(EndTime, @event.EndTime)
+            () => Assert.Equal(savedEvent.Id.ToString(), @event.Id!),
+            () => Assert.Equal(savedEvent.Name.ToString(), @event.Name),
+            () => Assert.Equal(savedEvent.Description.ToString(), @event.Description),
+            () => Assert.Equal(savedEvent.Location.ToString(), @event.Location),
+            () => Assert.Equal(savedEvent.StartTime.Value, @event.StartTime),
+            () => Assert.Equal(savedEvent.EndTime.Value, @event.EndTime)
         );
     }
 }

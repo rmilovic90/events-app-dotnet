@@ -12,6 +12,7 @@ Content-Type: application/json
 
 ###
 
+# @name createEvent
 POST {{WebApi_HostAddress}}/events
 Accept: application/json
 Content-Type: application/json
@@ -23,6 +24,18 @@ Authorization: Bearer {{generateAuthToken.response.body.$.access_token}}
   "location": "Online",
   "startTime": "{{$localDatetime iso8601 1 h}}",
   "endTime": "{{$localDatetime iso8601 2 h}}"
+}
+
+###
+
+POST {{WebApi_HostAddress}}/events/{{createEvent.response.body.$.id}}/registrations
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "phoneNumber": "+38155555555",
+  "emailAddress": "jane.doe@email.com"
 }
 
 ###

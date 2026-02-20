@@ -11,7 +11,7 @@ public sealed class EventTests
     private static readonly Name Name = new("Test");
     private static readonly Description Description = new("Test event.");
     private static readonly Location Location = new("Novi Sad, Serbia");
-    private static readonly StartTime StartTime = StartTime.Of(UtcTomorrow, new FakeTimeProvider(UtcNow));
+    private static readonly StartTime StartTime = StartTime.New(UtcTomorrow, new FakeTimeProvider(UtcNow));
     private static readonly EndTime EndTime = EndTime.Of(UtcDayAfterTomorrow, StartTime);
 
     [Fact]
@@ -241,6 +241,62 @@ public sealed class EventTests
             () => Assert.Equal(Location, @event.Location),
             () => Assert.Equal(StartTime, @event.StartTime),
             () => Assert.Equal(EndTime, @event.EndTime)
+        );
+    }
+
+    [Fact]
+    public void DoesNotAllowAddingOfPendingRegistration_WhenRegistrationIsNull()
+    {
+        Event @event = Event.New
+        (
+            Name,
+            Description,
+            Location,
+            StartTime,
+            EndTime
+        );
+
+        Assert.Throws<ArgumentNullException>(() => @event.Add(null!));
+    }
+
+    [Fact]
+    public void AllowsAddingOfPendingRegistration_WhenRegistrationIsPresent()
+    {
+        Id registrationId = new();
+        Id registrationEventId = new();
+        RegistrationName registrationName = new("Jane Doe");
+        RegistrationPhoneNumber registrationPhoneNumber = new("+38155555555");
+        RegistrationEmailAddress registrationEmailAddress = new("jane.doe@email.com");
+
+        Event @event = Event.New
+        (
+            Name,
+            Description,
+            Location,
+            StartTime,
+            EndTime
+        );
+
+        @event.Add
+        (
+            Registration.Of
+            (
+                registrationId,
+                registrationEventId,
+                registrationName,
+                registrationPhoneNumber,
+                registrationEmailAddress
+            )
+        );
+
+        Registration pendingRegistration = Assert.Single(@event.PendingRegistrations);
+        Assert.Multiple
+        (
+            () => Assert.Equal(registrationId, pendingRegistration.Id),
+            () => Assert.Equal(registrationEventId, pendingRegistration.EventId),
+            () => Assert.Equal(registrationName, pendingRegistration.Name),
+            () => Assert.Equal(registrationPhoneNumber, pendingRegistration.PhoneNumber),
+            () => Assert.Equal(registrationEmailAddress, pendingRegistration.EmailAddress)
         );
     }
 }

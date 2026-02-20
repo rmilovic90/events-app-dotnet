@@ -8,13 +8,13 @@ public sealed class StartTimeTests
     private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
 
     [Fact]
-    public void Create_Fails_WhenValueIsInThePast()
+    public void CreationOfNewStartTime_Fails_WhenValueIsInThePast()
     {
         DateTimeOffset utcYesteday = UtcNow.AddDays(-1);
 
         Assert.Throws<ArgumentException>
         (
-            () => StartTime.Of
+            () => StartTime.New
             (
                 new DateTimeOffset
                 (
@@ -32,13 +32,13 @@ public sealed class StartTimeTests
     }
 
     [Fact]
-    public void Create_Fails_WhenValueIsSameAsCurrentTime()
+    public void CreationOfNewStartTime_Fails_WhenValueIsSameAsCurrentTime()
     {
-        Assert.Throws<ArgumentException>(() => StartTime.Of(UtcNow, new FakeTimeProvider(UtcNow)));
+        Assert.Throws<ArgumentException>(() => StartTime.New(UtcNow, new FakeTimeProvider(UtcNow)));
     }
 
     [Fact]
-    public void Create_Succeeds_WhenValueIsInTheFuture()
+    public void CreationOfNewStartTime_Succeeds_WhenValueIsInTheFuture()
     {
         DateTimeOffset utcTomorrow = UtcNow.AddDays(1);
         DateTimeOffset utcTomorrowCentralEuropeanTime = new
@@ -52,7 +52,7 @@ public sealed class StartTimeTests
             CentralEuropeanTimeZone.GetUtcOffset(utcTomorrow)
         );
 
-        StartTime startTime = StartTime.Of(utcTomorrowCentralEuropeanTime, new FakeTimeProvider(UtcNow));
+        StartTime startTime = StartTime.New(utcTomorrowCentralEuropeanTime, new FakeTimeProvider(UtcNow));
 
         Assert.Equal(utcTomorrowCentralEuropeanTime, startTime.Value);
     }
