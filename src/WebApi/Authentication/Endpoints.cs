@@ -40,8 +40,9 @@ internal static class Endpoints
         endpoints.MapPost(GenerateTokenRoute, GenerateToken)
             .WithDescription($"Generate authentication token of type {JwtBearerDefaults.AuthenticationScheme}.")
             .WithTags("Authentication")
-            .Produces(StatusCodes.Status200OK, typeof(Token), MediaTypeNames.Application.Json)
-            .Produces(StatusCodes.Status400BadRequest, contentType: MediaTypeNames.Application.ProblemJson);
+            .Accepts<TokenRequest>(MediaTypeNames.Application.Json)
+            .Produces<Token>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)
+            .ProducesProblem(StatusCodes.Status400BadRequest, MediaTypeNames.Application.ProblemJson);
 
         return endpoints;
     }

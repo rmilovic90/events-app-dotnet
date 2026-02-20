@@ -21,6 +21,26 @@ internal sealed class Repository : IEventsRepository
         _connectionString = connectionString;
     }
 
+    public async Task<IReadOnlyList<EventEntity>> GetAll(CancellationToken cancellationToken)
+    {
+        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(_connectionString);
+
+        using NpgsqlCommand command = dataSource.CreateCommand();
+        command.CommandText = "SELECT * FROM events";
+
+        NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        if (!reader.HasRows) return [];
+
+        List<EventEntity> events = [];
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            events.Add(GetEvent(reader));
+        }
+
+        return events;
+    }
+
     public async Task<EventEntity?> Get(Id id, CancellationToken cancellationToken)
     {
         if (!Guid.TryParse(id.ToString(), out Guid idValue)) return null;
@@ -29,7 +49,7 @@ internal sealed class Repository : IEventsRepository
 
         using NpgsqlCommand command = dataSource.CreateCommand();
         command.CommandText = "SELECT * FROM events WHERE id = @id";
-        command.Parameters.Add(new NpgsqlParameter("id", NpgsqlDbType.Uuid) { Value = idValue });
+        command.Parameters.AddWithValue("id", NpgsqlDbType.Uuid, idValue);
 
         NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
 
@@ -37,34 +57,7 @@ internal sealed class Repository : IEventsRepository
 
         await reader.ReadAsync(cancellationToken);
 
-        DateTime startDateTimeOffset = reader.GetDateTime(reader.GetOrdinal("start_time"));
-        DateTime endDateTimeOffset = reader.GetDateTime(reader.GetOrdinal("end_time"));
-        StartTime startTime = StartTime.Of
-        (
-            new DateTimeOffset
-            (
-                reader.GetDateTime(reader.GetOrdinal("start_time")),
-                reader.GetTimeSpan(reader.GetOrdinal("start_time_offset"))
-            )
-        );
-
-        return EventEntity.Of
-        (
-            id,
-            new Name(reader.GetString(reader.GetOrdinal("name"))),
-            new Description(reader.GetString(reader.GetOrdinal("description"))),
-            new Location(reader.GetString(reader.GetOrdinal("location"))),
-            startTime,
-            EndTime.Of
-            (
-                new DateTimeOffset
-                (
-                    reader.GetDateTime(reader.GetOrdinal("end_time")),
-                    reader.GetTimeSpan(reader.GetOrdinal("end_time_offset"))
-                ),
-                startTime
-            )
-        );
+        return GetEvent(reader);
     }
 
     public async Task Save(EventEntity @event, CancellationToken cancellationToken)
@@ -133,5 +126,37 @@ internal sealed class Repository : IEventsRepository
 
             throw;
         }
+    }
+
+    private static EventEntity GetEvent(NpgsqlDataReader reader)
+    {
+        DateTime startDateTimeOffset = reader.GetDateTime(reader.GetOrdinal("start_time"));
+        DateTime endDateTimeOffset = reader.GetDateTime(reader.GetOrdinal("end_time"));
+        StartTime startTime = StartTime.Of
+        (
+            new DateTimeOffset
+            (
+                reader.GetDateTime(reader.GetOrdinal("start_time")),
+                reader.GetTimeSpan(reader.GetOrdinal("start_time_offset"))
+            )
+        );
+
+        return EventEntity.Of
+        (
+            new Id(reader.GetGuid(reader.GetOrdinal("id")).ToString()),
+            new Name(reader.GetString(reader.GetOrdinal("name"))),
+            new Description(reader.GetString(reader.GetOrdinal("description"))),
+            new Location(reader.GetString(reader.GetOrdinal("location"))),
+            startTime,
+            EndTime.Of
+            (
+                new DateTimeOffset
+                (
+                    reader.GetDateTime(reader.GetOrdinal("end_time")),
+                    reader.GetTimeSpan(reader.GetOrdinal("end_time_offset"))
+                ),
+                startTime
+            )
+        );
     }
 }

@@ -39,3 +39,14 @@ Content-Type: application/json
 }
 
 ###
+
+# @name getAllEvents
+GET {{WebApi_HostAddress}}/events
+Accept: application/json
+
+###
+
+GET {{WebApi_HostAddress}}/events/{{getAllEvents.response.body.$[0].id}}
+Accept: application/json
+
+###

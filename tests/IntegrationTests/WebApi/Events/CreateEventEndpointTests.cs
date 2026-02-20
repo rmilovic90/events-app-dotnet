@@ -16,7 +16,7 @@ using EventResource = Events.WebApi.Events.Event;
 
 namespace Events.WebApi.Events;
 
-public sealed class EventEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private const string Name = "Test";
     private const string Description = "Test event.";
@@ -39,7 +39,7 @@ public sealed class EventEndpointsTests : IClassFixture<WebApplicationFactory<Pr
     private readonly IEventsRepository _repositoryMock;
     private readonly HttpClient _httpClient;
 
-    public EventEndpointsTests(WebApplicationFactory<Program> factory)
+    public CreateEventEndpointTests(WebApplicationFactory<Program> factory)
     {
         _repositoryMock = Substitute.For<IEventsRepository>();
 

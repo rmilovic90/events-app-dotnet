@@ -1,8 +1,6 @@
 using Events.Domain;
 using Events.Domain.Events;
 
-using Microsoft.Extensions.Time.Testing;
-
 using Npgsql;
 
 using Testcontainers.PostgreSql;
@@ -19,7 +17,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     private static readonly DateTimeOffset UtcTomorrow = UtcNow.AddDays(1);
     private static readonly DateTimeOffset UtcDayAfterTomorrow = UtcTomorrow.AddDays(1);
     private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-    private static readonly StartTime StartTime = StartTime.New
+    private static readonly StartTime StartTime = StartTime.Of
     (
         new DateTimeOffset
         (
@@ -30,8 +28,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
             UtcTomorrow.Minute,
             UtcTomorrow.Second,
             CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)
-        ),
-        new FakeTimeProvider(UtcNow)
+        )
     );
     private static EventEntity Event => EventEntity.New
     (
@@ -54,6 +51,30 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
             StartTime
         )
     );
+
+    [Fact]
+    public async Task ReturnsAllSavedEvents()
+    {
+        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
+
+        await SetupDatabase(dataSource);
+
+        EventEntity firstEvent = Event;
+        EventEntity secondEvent = Event;
+
+        Repository repository = new(Container.GetConnectionString());
+
+        await repository.Save(firstEvent, TestContext.Current.CancellationToken);
+        await repository.Save(secondEvent, TestContext.Current.CancellationToken);
+
+        IReadOnlyList<EventEntity> events = await repository.GetAll(TestContext.Current.CancellationToken);
+
+        Assert.Equivalent
+        (
+            new[] { firstEvent, secondEvent },
+            events
+        );
+    }
 
     [Fact]
     public async Task DoesNotFindEvent_WhenEventWithGivenIdDoesNotExist()
