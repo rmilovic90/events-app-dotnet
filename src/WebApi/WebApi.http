@@ -46,7 +46,14 @@ Accept: application/json
 
 ###
 
+# @name getSingleEvent
 GET {{WebApi_HostAddress}}/events/{{getAllEvents.response.body.$[0].id}}
 Accept: application/json
+
+###
+
+GET {{WebApi_HostAddress}}/events/{{getSingleEvent.response.body.$.id}}/registrations
+Accept: application/json
+Authorization: Bearer {{generateAuthToken.response.body.$.access_token}}
 
 ###

@@ -60,6 +60,39 @@ internal sealed class Repository : IEventsRepository
         return GetEvent(reader);
     }
 
+    public async Task<IReadOnlyList<EventRegistrationEntity>> GetAllRegistrations(Id eventId, CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(eventId.ToString(), out Guid idValue)) return [];
+
+        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(_connectionString);
+
+        using NpgsqlCommand command = dataSource.CreateCommand();
+        command.CommandText = "SELECT * FROM registrations WHERE event_id = @eventId";
+        command.Parameters.AddWithValue("eventId", NpgsqlDbType.Uuid, idValue);
+
+        NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        if (!reader.HasRows) return [];
+
+        List<EventRegistrationEntity> eventRegistrations = [];
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            eventRegistrations.Add
+            (
+                EventRegistrationEntity.Of
+                (
+                    new Id(reader.GetGuid(reader.GetOrdinal("id")).ToString()),
+                    new Id(reader.GetGuid(reader.GetOrdinal("event_id")).ToString()),
+                    new RegistrationName(reader.GetString(reader.GetOrdinal("name"))),
+                    new RegistrationPhoneNumber(reader.GetString(reader.GetOrdinal("phone_number"))),
+                    new RegistrationEmailAddress(reader.GetString(reader.GetOrdinal("email_address")))
+                )
+            );
+        }
+
+        return eventRegistrations;
+    }
+
     public async Task Save(EventEntity @event, CancellationToken cancellationToken)
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(_connectionString);
@@ -130,8 +163,6 @@ internal sealed class Repository : IEventsRepository
 
     private static EventEntity GetEvent(NpgsqlDataReader reader)
     {
-        DateTime startDateTimeOffset = reader.GetDateTime(reader.GetOrdinal("start_time"));
-        DateTime endDateTimeOffset = reader.GetDateTime(reader.GetOrdinal("end_time"));
         StartTime startTime = StartTime.Of
         (
             new DateTimeOffset

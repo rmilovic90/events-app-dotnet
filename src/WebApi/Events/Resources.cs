@@ -68,6 +68,16 @@ public sealed class Event
 
 public sealed class Registration
 {
+    public static Registration FromEntity(RegistrationEntity registration) =>
+        new()
+        {
+            Id = registration.Id.ToString(),
+            EventId = registration.EventId.ToString(),
+            Name = registration.Name.ToString(),
+            PhoneNumber = registration.PhoneNumber.ToString(),
+            EmailAddress = registration.EmailAddress.ToString()
+        };
+
     public string? Id { get; set; }
 
     [Description("ID of the event for which registration is made.")]

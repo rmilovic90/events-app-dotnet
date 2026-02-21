@@ -72,7 +72,6 @@ public sealed class GetAllEventsEndpointTests : IClassFixture<WebApplicationFact
 
         IEnumerable<EventResource>? events = await response.Content.ReadFromJsonAsync<IEnumerable<EventResource>>(TestContext.Current.CancellationToken);
 
-        Assert.NotNull(events);
         Assert.Equivalent
         (
             new[]

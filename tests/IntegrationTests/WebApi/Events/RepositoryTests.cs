@@ -118,6 +118,48 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     }
 
     [Fact]
+    public async Task ReturnsAllEventRegistrations()
+    {
+        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
+
+        await SetupDatabase(dataSource);
+
+        EventEntity @event = Event;
+
+        Repository repository = new(Container.GetConnectionString());
+
+        await repository.Save(@event, TestContext.Current.CancellationToken);
+
+        RegistrationEntity firstEventRegistration = RegistrationEntity.New
+        (
+            @event.Id,
+            new RegistrationName("Jane Doe"),
+            new RegistrationPhoneNumber("+38155555555"),
+            new RegistrationEmailAddress("jane.doe@email.com")
+        );
+        RegistrationEntity secondEventRegistration = RegistrationEntity.New
+        (
+            @event.Id,
+            new RegistrationName("John Doe"),
+            new RegistrationPhoneNumber("+38155666666"),
+            new RegistrationEmailAddress("john.doe@email.com")
+        );
+
+        @event.Add(firstEventRegistration);
+        @event.Add(secondEventRegistration);
+
+        await repository.Save(@event, TestContext.Current.CancellationToken);
+
+        IReadOnlyList<RegistrationEntity> eventRegistrations = await repository.GetAllRegistrations(@event.Id, TestContext.Current.CancellationToken);
+
+        Assert.Equivalent
+        (
+            new[] { firstEventRegistration, secondEventRegistration },
+            eventRegistrations
+        );
+    }
+
+    [Fact]
     public async Task SavesNewEvent()
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
@@ -199,7 +241,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     private static Task<NpgsqlDataReader> GetEvent(NpgsqlDataSource dataSource, EventEntity @event)
     {
         using NpgsqlCommand getEventByIdQuery = dataSource.CreateCommand();
-        getEventByIdQuery.CommandText = @$"SELECT * FROM events WHERE ""id"" = '{@event.Id}'";
+        getEventByIdQuery.CommandText = $"SELECT * FROM events WHERE id = '{@event.Id}'";
 
         return getEventByIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
     }
@@ -207,7 +249,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     private static Task<NpgsqlDataReader> GetEventRegistrations(NpgsqlDataSource dataSource, EventEntity @event)
     {
         using NpgsqlCommand getRegistrationsByEventIdQuery = dataSource.CreateCommand();
-        getRegistrationsByEventIdQuery.CommandText = @$"SELECT * FROM registrations WHERE ""event_id"" = '{@event.Id}'";
+        getRegistrationsByEventIdQuery.CommandText = $"SELECT * FROM registrations WHERE event_id = '{@event.Id}'";
 
         return getRegistrationsByEventIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
     }

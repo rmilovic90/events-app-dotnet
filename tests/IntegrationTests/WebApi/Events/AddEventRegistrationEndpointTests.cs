@@ -19,14 +19,14 @@ using RegistrationEntity = Events.Domain.Events.Registration;
 
 namespace Events.WebApi.Events;
 
-public class EventRegistrationsEndpointsTests : IClassFixture<WebApplicationFactory<Program>>
+public class AddEventRegistrationEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private const string EventId = "019c770f-52d0-7656-9298-adeecf45987a";
     private const string Name = "Jane Doe";
     private const string PhoneNumber = "+38155555555";
     private const string EmailAddress = "jane.doe@email.com";
 
-    private static readonly string RequestUrl = Endpoints.AddRegistrationRoute.Replace("{id}", EventId);
+    private static readonly string RequestUrl = Endpoints.AddEventRegistrationRoute.Replace("{id}", EventId);
 
     private static readonly EventRegistrationResource ValidEventRegistration = new()
     {
@@ -38,7 +38,7 @@ public class EventRegistrationsEndpointsTests : IClassFixture<WebApplicationFact
     private readonly IEventsRepository _repositoryMock;
     private readonly HttpClient _httpClient;
 
-    public EventRegistrationsEndpointsTests(WebApplicationFactory<Program> factory)
+    public AddEventRegistrationEndpointTests(WebApplicationFactory<Program> factory)
     {
         _repositoryMock = Substitute.For<IEventsRepository>();
 

@@ -19,7 +19,8 @@ internal static class Endpoints
     internal const string GetAllRoute = BaseRoute;
     internal const string GetSingleRoute = $"{BaseRoute}/{{id}}";
     internal const string CreateRoute = BaseRoute;
-    internal const string AddRegistrationRoute = $"{GetSingleRoute}/registrations";
+    internal const string GetAllEventRegistrationsRoute = $"{GetSingleRoute}/registrations";
+    internal const string AddEventRegistrationRoute = $"{GetSingleRoute}/registrations";
 
     private static async Task<IResult> GetAll
     (
@@ -44,7 +45,7 @@ internal static class Endpoints
         return @event is null
             ? TypedResults.Problem
             (
-                title: $"Event with ID '{id}' does not exist",
+                title: $"Event with ID '{id}' does not exist.",
                 statusCode: StatusCodes.Status404NotFound
             )
             : TypedResults.Ok(EventResource.FromEntity(@event));
@@ -68,7 +69,28 @@ internal static class Endpoints
         );
     }
 
-    private static async Task<IResult> AddRegistration
+    private static async Task<IResult> GetAllEventRegistrations
+    (
+        [FromRoute(Name = "id")] string eventId,
+        IEventsRepository repository,
+        CancellationToken cancellationToken
+    )
+    {
+        EventEntity? @event = await repository.Get(new Id(eventId), cancellationToken);
+
+        if (@event is null)
+            return TypedResults.Problem
+            (
+                title: $"Event with ID '{eventId}' does not exist.",
+                statusCode: StatusCodes.Status404NotFound
+            );
+
+        IReadOnlyList<RegistrationEntity> registrations = await repository.GetAllRegistrations(new Id(eventId), cancellationToken);
+
+        return TypedResults.Ok(registrations.Select(RegistrationResource.FromEntity));
+    }
+
+    private static async Task<IResult> AddEventRegistration
     (
         [FromRoute(Name = "id")] string eventId,
         [FromBody] RegistrationResource registration,
@@ -81,7 +103,7 @@ internal static class Endpoints
         if (@event is null)
             return TypedResults.Problem
             (
-                title: $"Event with ID '{eventId}' does not exist",
+                title: $"Event with ID '{eventId}' does not exist.",
                 statusCode: StatusCodes.Status404NotFound
             );
 
@@ -122,7 +144,15 @@ internal static class Endpoints
             .ProducesProblem(StatusCodes.Status400BadRequest, MediaTypeNames.Application.ProblemJson)
             .Produces(StatusCodes.Status401Unauthorized);
 
-        endpoints.MapPost(AddRegistrationRoute, AddRegistration)
+        endpoints.MapGet(GetAllEventRegistrationsRoute, GetAllEventRegistrations)
+            .RequireAuthorization()
+            .WithDescription("Gets all registrations of an event with given ID.")
+            .WithTags("Events")
+            .Produces<IList<RegistrationResource>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)
+            .ProducesProblem(StatusCodes.Status404NotFound, MediaTypeNames.Application.ProblemJson)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        endpoints.MapPost(AddEventRegistrationRoute, AddEventRegistration)
             .WithDescription("Adds a new registration to the event with given ID.")
             .WithTags("Events")
             .Accepts<RegistrationResource>(MediaTypeNames.Application.Json)
