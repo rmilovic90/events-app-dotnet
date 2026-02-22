@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 using EventEntity = Events.Domain.Events.Event;
 using EventResource = Events.WebApi.Events.Event;
-using RegistrationEntity = Events.Domain.Events.Registration;
-using RegistrationResource = Events.WebApi.Events.Registration;
 using RootEndpoints = Events.WebApi.Endpoints;
 
 namespace Events.WebApi.Events;
@@ -19,8 +17,6 @@ internal static class Endpoints
     internal const string GetAllRoute = BaseRoute;
     internal const string GetSingleRoute = $"{BaseRoute}/{{id}}";
     internal const string CreateRoute = BaseRoute;
-    internal const string GetAllEventRegistrationsRoute = $"{GetSingleRoute}/registrations";
-    internal const string AddEventRegistrationRoute = $"{GetSingleRoute}/registrations";
 
     private static async Task<IResult> GetAll
     (
@@ -69,59 +65,6 @@ internal static class Endpoints
         );
     }
 
-    private static async Task<IResult> GetAllEventRegistrations
-    (
-        [FromRoute(Name = "id")] string eventId,
-        IEventsRepository repository,
-        CancellationToken cancellationToken
-    )
-    {
-        EventEntity? @event = await repository.Get(new Id(eventId), cancellationToken);
-
-        if (@event is null)
-            return TypedResults.Problem
-            (
-                title: $"Event with ID '{eventId}' does not exist.",
-                statusCode: StatusCodes.Status404NotFound
-            );
-
-        IReadOnlyList<RegistrationEntity> registrations = await repository.GetAllRegistrations(new Id(eventId), cancellationToken);
-
-        return TypedResults.Ok(registrations.Select(RegistrationResource.FromEntity));
-    }
-
-    private static async Task<IResult> AddEventRegistration
-    (
-        [FromRoute(Name = "id")] string eventId,
-        [FromBody] RegistrationResource registration,
-        IEventsRepository repository,
-        CancellationToken cancellationToken
-    )
-    {
-        EventEntity? @event = await repository.Get(new Id(eventId), cancellationToken);
-
-        if (@event is null)
-            return TypedResults.Problem
-            (
-                title: $"Event with ID '{eventId}' does not exist.",
-                statusCode: StatusCodes.Status404NotFound
-            );
-
-        RegistrationEntity registrationEntity = registration.AsEntity(eventId);
-        @event.Add(registrationEntity);
-
-        await repository.Save(@event, cancellationToken);
-
-        registration.Id = registrationEntity.Id.ToString();
-        registration.EventId = registrationEntity.EventId.ToString();
-
-        return TypedResults.Created
-        (
-            (string?)null,
-            registration
-        );
-    }
-
     public static IEndpointRouteBuilder RegisterEventsEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet(GetAllRoute, GetAll)
@@ -143,22 +86,6 @@ internal static class Endpoints
             .Produces<EventResource>(StatusCodes.Status201Created, MediaTypeNames.Application.Json)
             .ProducesProblem(StatusCodes.Status400BadRequest, MediaTypeNames.Application.ProblemJson)
             .Produces(StatusCodes.Status401Unauthorized);
-
-        endpoints.MapGet(GetAllEventRegistrationsRoute, GetAllEventRegistrations)
-            .RequireAuthorization()
-            .WithDescription("Gets all registrations of an event with given ID.")
-            .WithTags("Events")
-            .Produces<IList<RegistrationResource>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)
-            .ProducesProblem(StatusCodes.Status404NotFound, MediaTypeNames.Application.ProblemJson)
-            .Produces(StatusCodes.Status401Unauthorized);
-
-        endpoints.MapPost(AddEventRegistrationRoute, AddEventRegistration)
-            .WithDescription("Adds a new registration to the event with given ID.")
-            .WithTags("Events")
-            .Accepts<RegistrationResource>(MediaTypeNames.Application.Json)
-            .Produces<RegistrationResource>(StatusCodes.Status201Created, MediaTypeNames.Application.Json)
-            .ProducesProblem(StatusCodes.Status400BadRequest, MediaTypeNames.Application.ProblemJson)
-            .ProducesProblem(StatusCodes.Status404NotFound, MediaTypeNames.Application.ProblemJson);
 
         return endpoints;
     }

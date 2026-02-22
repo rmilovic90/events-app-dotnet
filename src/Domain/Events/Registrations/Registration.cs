@@ -1,13 +1,13 @@
-namespace Events.Domain.Events;
+namespace Events.Domain.Events.Registrations;
 
 public sealed class Registration
 {
     public static Registration New
     (
         Id eventId,
-        RegistrationName name,
-        RegistrationPhoneNumber phoneNumber,
-        RegistrationEmailAddress emailAddress
+        Name name,
+        PhoneNumber phoneNumber,
+        EmailAddress emailAddress
     ) => Of
     (
         new Id(),
@@ -21,9 +21,9 @@ public sealed class Registration
     (
         Id id,
         Id eventId,
-        RegistrationName name,
-        RegistrationPhoneNumber phoneNumber,
-        RegistrationEmailAddress emailAddress
+        Name name,
+        PhoneNumber phoneNumber,
+        EmailAddress emailAddress
     ) => new
     (
         id,
@@ -37,9 +37,9 @@ public sealed class Registration
     (
         Id id,
         Id eventId,
-        RegistrationName name,
-        RegistrationPhoneNumber phoneNumber,
-        RegistrationEmailAddress emailAddress
+        Name name,
+        PhoneNumber phoneNumber,
+        EmailAddress emailAddress
     )
     {
         ArgumentNullException.ThrowIfNull(id);
@@ -57,9 +57,9 @@ public sealed class Registration
 
     public Id Id { get; }
     public Id EventId { get; }
-    public RegistrationName Name { get; }
-    public RegistrationPhoneNumber PhoneNumber { get; }
-    public RegistrationEmailAddress EmailAddress { get; }
+    public Name Name { get; }
+    public PhoneNumber PhoneNumber { get; }
+    public EmailAddress EmailAddress { get; }
 
     public override string ToString() =>
         $"{nameof(Registration)} {{ {nameof(Id)} = {Id}, {nameof(EventId)} = {EventId}, {nameof(Name)} = {Name}, {nameof(PhoneNumber)} = {PhoneNumber}, {nameof(EmailAddress)} = {EmailAddress} }}";

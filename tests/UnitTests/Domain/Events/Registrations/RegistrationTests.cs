@@ -1,6 +1,6 @@
 using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 
-namespace Events.Domain.Events;
+namespace Events.Domain.Events.Registrations;
 
 public sealed class RegistrationTests
 {

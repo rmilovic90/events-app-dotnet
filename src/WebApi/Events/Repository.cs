@@ -6,7 +6,10 @@ using Npgsql;
 using NpgsqlTypes;
 
 using EventEntity = Events.Domain.Events.Event;
-using EventRegistrationEntity = Events.Domain.Events.Registration;
+using EventRegistrationEntity = Events.Domain.Events.Registrations.Registration;
+using RegistrationEmailAddress = Events.Domain.Events.Registrations.EmailAddress;
+using RegistrationName = Events.Domain.Events.Registrations.Name;
+using RegistrationPhoneNumber = Events.Domain.Events.Registrations.PhoneNumber;
 
 namespace Events.WebApi.Events;
 

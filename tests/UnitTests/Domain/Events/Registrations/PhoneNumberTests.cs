@@ -1,13 +1,13 @@
 using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 
-namespace Events.Domain.Events;
+namespace Events.Domain.Events.Registrations;
 
-public sealed class RegistrationPhoneNumberTests
+public sealed class PhoneNumberTests
 {
     [Fact]
     public void Create_Fails_WhenValueIsNull()
     {
-        Assert.Throws<ArgumentNullException>(() => new RegistrationPhoneNumber(null!));
+        Assert.Throws<ArgumentNullException>(() => new PhoneNumber(null!));
     }
 
     [Theory]
@@ -15,7 +15,7 @@ public sealed class RegistrationPhoneNumberTests
     [InlineData(RegistrationPhoneNumberValueWithWhitespacesOnly)]
     public void Create_Fails_WhenValueIsBlank(string? value)
     {
-        Assert.Throws<ArgumentException>(() => new RegistrationPhoneNumber(value!));
+        Assert.Throws<ArgumentException>(() => new PhoneNumber(value!));
     }
 
     [Theory]
@@ -26,13 +26,13 @@ public sealed class RegistrationPhoneNumberTests
     [InlineData("+1 (55)a555-555.", Label = "Contains characters other then digits and '+' sign.")]
     public void Create_Fails_WhenValueHasWrongFormat(string value)
     {
-        Assert.Throws<ArgumentException>(() => new RegistrationPhoneNumber(value));
+        Assert.Throws<ArgumentException>(() => new PhoneNumber(value));
     }
 
     [Fact]
     public void Create_Succeeds_WhenValueIsProvided()
     {
-        RegistrationPhoneNumber phoneNumber = new(ARegistrationPhoneNumberValue);
+        PhoneNumber phoneNumber = new(ARegistrationPhoneNumberValue);
 
         Assert.Equal(new(ARegistrationPhoneNumberValue), phoneNumber);
     }

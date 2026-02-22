@@ -9,7 +9,7 @@ using static Events.Domain.Events.EventEntityBuilder;
 using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
-using RegistrationEntity = Events.Domain.Events.Registration;
+using RegistrationEntity = Events.Domain.Events.Registrations.Registration;
 
 namespace Events.WebApi.Events;
 

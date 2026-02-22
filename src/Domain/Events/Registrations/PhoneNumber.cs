@@ -1,14 +1,14 @@
 using System.Text.RegularExpressions;
 
-namespace Events.Domain.Events;
+namespace Events.Domain.Events.Registrations;
 
-public sealed partial record RegistrationPhoneNumber
+public sealed partial record PhoneNumber
 {
     public const string FormatPattern = "^\\+[1-9]\\d{1,14}$";
 
     private string Value { get; }
 
-    public RegistrationPhoneNumber(string value)
+    public PhoneNumber(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         ArgumentException.ThrowIfNotMatched(value, FormatRegex());

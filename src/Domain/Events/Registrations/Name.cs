@@ -1,12 +1,12 @@
-namespace Events.Domain.Events;
+namespace Events.Domain.Events.Registrations;
 
-public sealed record RegistrationName
+public sealed record Name
 {
     public const int MaxLength = 100;
 
     private string Value { get; }
 
-    public RegistrationName(string value)
+    public Name(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         ArgumentException.ThrowIfLongerThan(value, MaxLength);

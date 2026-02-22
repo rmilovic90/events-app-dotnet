@@ -1,8 +1,10 @@
 using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 
-namespace Events.Domain.Events;
+using RegistrationName = Events.Domain.Events.Registrations.Name;
 
-public sealed class RegistrationNameTests
+namespace Events.Domain.Events.Registrations;
+
+public sealed class NameTests
 {
     [Fact]
     public void Create_Fails_WhenValueIsNull()

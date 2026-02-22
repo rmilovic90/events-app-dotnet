@@ -1,13 +1,13 @@
-namespace Events.Domain.Events;
+namespace Events.Domain.Events.Registrations;
 
-public sealed record RegistrationEmailAddress
+public sealed record EmailAddress
 {
     private const string AtCharacter = "@";
     public const int MaxLength = 254;
 
     private string Value { get; }
 
-    public RegistrationEmailAddress(string value)
+    public EmailAddress(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         ArgumentException.ThrowIfLongerThan(value, MaxLength);

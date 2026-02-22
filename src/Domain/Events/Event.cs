@@ -1,3 +1,5 @@
+using Events.Domain.Events.Registrations;
+
 namespace Events.Domain.Events;
 
 public sealed class Event

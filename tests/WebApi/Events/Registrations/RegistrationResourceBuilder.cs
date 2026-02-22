@@ -1,4 +1,4 @@
-using Events.Domain.Events;
+using Events.Domain.Events.Registrations;
 
 namespace Events.WebApi.Events.Registrations;
 
@@ -6,7 +6,7 @@ public sealed class RegistrationResourceBuilder
 {
     public const string AnEmptyRegistrationName = "";
     public const string RegistrationNameWithWhitespacesOnly = "  ";
-    public static readonly string TooLongRegistrationName = new('*', RegistrationName.MaxLength + 1);
+    public static readonly string TooLongRegistrationName = new('*', Name.MaxLength + 1);
     public const string ARegistrationName = "Jane Doe";
     public const string AnEmptyRegistrationPhoneNumber = "";
     public const string RegistrationPhoneNumberWithWhitespacesOnly = "  ";
@@ -14,7 +14,7 @@ public sealed class RegistrationResourceBuilder
     public const string ARegistrationPhoneNumber = "+38155555555";
     public const string AnEmptyRegistrationEmailAddress = "";
     public const string RegistrationEmailAddressWithWhitespacesOnly = "  ";
-    public static readonly string TooLongRegistrationEmailAddress = $"{new string('*', RegistrationEmailAddress.MaxLength + 1)}@email.com";
+    public static readonly string TooLongRegistrationEmailAddress = $"{new string('*', EmailAddress.MaxLength + 1)}@email.com";
     public const string RegistrationEmailAddressWithInvalidFormat = "email.com";
     public const string ARegistrationEmailAddress = "jane.doe@email.com";
 

@@ -16,12 +16,15 @@ using static Events.Domain.Events.EventEntityBuilder;
 using static Events.WebApi.Events.Registrations.RegistrationResourceBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
-using RegistrationEntity = Events.Domain.Events.Registration;
-using RegistrationResource = Events.WebApi.Events.Registration;
+using RegistrationEmailAddress = Events.Domain.Events.Registrations.EmailAddress;
+using RegistrationEntity = Events.Domain.Events.Registrations.Registration;
+using RegistrationName = Events.Domain.Events.Registrations.Name;
+using RegistrationPhoneNumber = Events.Domain.Events.Registrations.PhoneNumber;
+using RegistrationResource = Events.WebApi.Events.Registrations.Registration;
 
-namespace Events.WebApi.Events;
+namespace Events.WebApi.Events.Registrations;
 
-public class AddEventRegistrationEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private static readonly string RequestUrl = Endpoints.AddEventRegistrationRoute.Replace("{id}", AnEventIdValue);
 

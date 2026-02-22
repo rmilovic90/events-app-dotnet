@@ -1,3 +1,5 @@
+using Events.Domain.Events.Registrations;
+
 using static Events.Domain.Events.EventEntityBuilder;
 using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 using static Events.WebApi.Events.Registrations.RegistrationResourceBuilder;
 
-namespace Events.WebApi.Events;
+namespace Events.WebApi.Events.Registrations;
 
 public sealed class RegistrationResourceValidationTests
 {
