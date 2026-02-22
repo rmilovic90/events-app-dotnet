@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Starting PostgreSQL DB conatiner ..."
+echo "Starting PostgreSQL DB container ..."
 
 docker compose -f ./src/WebApi/compose.yml up -d
 

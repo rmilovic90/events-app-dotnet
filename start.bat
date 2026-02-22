@@ -1,11 +1,9 @@
 @echo off
 
-echo Starting PostgreSQL DB conatiner ...
+echo Starting PostgreSQL DB container ...
 
 docker compose -f ./src/WebApi/compose.yml up -d
 
 echo Starting application ...
 
 dotnet run --project ./src/WebApi/WebApi.csproj
-
-PAUSE
