@@ -1,12 +1,9 @@
+using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
+
 namespace Events.Domain.Events;
 
 public sealed class RegistrationTests
 {
-    private static readonly Id EventId = new();
-    private static readonly RegistrationName Name = new("Jane Doe");
-    private static readonly RegistrationPhoneNumber PhoneNumber = new("+38155555555");
-    private static readonly RegistrationEmailAddress EmailAddress = new("jane.doe@email.com");
-
     [Fact]
     public void CreateOfNewRegistration_Fails_WhenEventIdIsNull()
     {
@@ -15,9 +12,9 @@ public sealed class RegistrationTests
             () => Registration.New
             (
                 null!,
-                Name,
-                PhoneNumber,
-                EmailAddress
+                ARegistrationName,
+                ARegistrationPhoneNumber,
+                ARegistrationEmailAddress
             )
         );
     }
@@ -29,10 +26,10 @@ public sealed class RegistrationTests
         (
             () => Registration.New
             (
-                EventId,
+                ARegistrationEventId,
                 null!,
-                PhoneNumber,
-                EmailAddress
+                ARegistrationPhoneNumber,
+                ARegistrationEmailAddress
             )
         );
     }
@@ -44,10 +41,10 @@ public sealed class RegistrationTests
         (
             () => Registration.New
             (
-                EventId,
-                Name,
+                ARegistrationEventId,
+                ARegistrationName,
                 null!,
-                EmailAddress
+                ARegistrationEmailAddress
             )
         );
     }
@@ -59,9 +56,9 @@ public sealed class RegistrationTests
         (
             () => Registration.New
             (
-                EventId,
-                Name,
-                PhoneNumber,
+                ARegistrationEventId,
+                ARegistrationName,
+                ARegistrationPhoneNumber,
                 null!
             )
         );
@@ -72,19 +69,19 @@ public sealed class RegistrationTests
     {
         Registration registration = Registration.New
         (
-            EventId,
-            Name,
-            PhoneNumber,
-            EmailAddress
+            ARegistrationEventId,
+            ARegistrationName,
+            ARegistrationPhoneNumber,
+            ARegistrationEmailAddress
         );
 
         Assert.Multiple
         (
             () => Assert.NotNull(registration.Id),
-            () => Assert.Equal(EventId, registration.EventId),
-            () => Assert.Equal(Name, registration.Name),
-            () => Assert.Equal(PhoneNumber, registration.PhoneNumber),
-            () => Assert.Equal(EmailAddress, registration.EmailAddress)
+            () => Assert.Equal(ARegistrationEventId, registration.EventId),
+            () => Assert.Equal(ARegistrationName, registration.Name),
+            () => Assert.Equal(ARegistrationPhoneNumber, registration.PhoneNumber),
+            () => Assert.Equal(ARegistrationEmailAddress, registration.EmailAddress)
         );
     }
 
@@ -96,10 +93,10 @@ public sealed class RegistrationTests
             () => Registration.Of
             (
                 null!,
-                EventId,
-                Name,
-                PhoneNumber,
-                EmailAddress
+                ARegistrationEventId,
+                ARegistrationName,
+                ARegistrationPhoneNumber,
+                ARegistrationEmailAddress
             )
         );
     }
@@ -111,11 +108,11 @@ public sealed class RegistrationTests
         (
             () => Registration.Of
             (
-                new Id(),
+                ARegistrationId,
                 null!,
-                Name,
-                PhoneNumber,
-                EmailAddress
+                ARegistrationName,
+                ARegistrationPhoneNumber,
+                ARegistrationEmailAddress
             )
         );
     }
@@ -127,11 +124,11 @@ public sealed class RegistrationTests
         (
             () => Registration.Of
             (
-                new Id(),
-                EventId,
+                ARegistrationId,
+                ARegistrationEventId,
                 null!,
-                PhoneNumber,
-                EmailAddress
+                ARegistrationPhoneNumber,
+                ARegistrationEmailAddress
             )
         );
     }
@@ -143,11 +140,11 @@ public sealed class RegistrationTests
         (
             () => Registration.Of
             (
-                new Id(),
-                EventId,
-                Name,
+                ARegistrationId,
+                ARegistrationEventId,
+                ARegistrationName,
                 null!,
-                EmailAddress
+                ARegistrationEmailAddress
             )
         );
     }
@@ -159,10 +156,10 @@ public sealed class RegistrationTests
         (
             () => Registration.Of
             (
-                new Id(),
-                EventId,
-                Name,
-                PhoneNumber,
+                ARegistrationId,
+                ARegistrationEventId,
+                ARegistrationName,
+                ARegistrationPhoneNumber,
                 null!
             )
         );
@@ -175,19 +172,19 @@ public sealed class RegistrationTests
         Registration registration = Registration.Of
         (
             id,
-            EventId,
-            Name,
-            PhoneNumber,
-            EmailAddress
+            ARegistrationEventId,
+            ARegistrationName,
+            ARegistrationPhoneNumber,
+            ARegistrationEmailAddress
         );
 
         Assert.Multiple
         (
             () => Assert.Equal(id, registration.Id),
-            () => Assert.Equal(EventId, registration.EventId),
-            () => Assert.Equal(Name, registration.Name),
-            () => Assert.Equal(PhoneNumber, registration.PhoneNumber),
-            () => Assert.Equal(EmailAddress, registration.EmailAddress)
+            () => Assert.Equal(ARegistrationEventId, registration.EventId),
+            () => Assert.Equal(ARegistrationName, registration.Name),
+            () => Assert.Equal(ARegistrationPhoneNumber, registration.PhoneNumber),
+            () => Assert.Equal(ARegistrationEmailAddress, registration.EmailAddress)
         );
     }
 }

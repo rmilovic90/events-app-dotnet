@@ -1,17 +1,10 @@
+using static Events.Domain.Events.EventEntityBuilder;
+using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
+
 namespace Events.Domain.Events;
 
 public sealed class EventTests
 {
-    private static readonly DateTimeOffset UtcNow = DateTimeOffset.UtcNow;
-    private static readonly DateTimeOffset UtcTomorrow = UtcNow.AddDays(1);
-    private static readonly DateTimeOffset UtcDayAfterTomorrow = UtcTomorrow.AddDays(1);
-
-    private static readonly Name Name = new("Test");
-    private static readonly Description Description = new("Test event.");
-    private static readonly Location Location = new("Novi Sad, Serbia");
-    private static readonly StartTime StartTime = StartTime.Of(UtcTomorrow);
-    private static readonly EndTime EndTime = EndTime.Of(UtcDayAfterTomorrow);
-
     [Fact]
     public void CreateOfNewEvent_Fails_WhenNameIsNull()
     {
@@ -20,10 +13,10 @@ public sealed class EventTests
             () => Event.New
             (
                 null!,
-                Description,
-                Location,
-                StartTime,
-                EndTime
+                AnEventDescription,
+                AnEventLocation,
+                TomorrowStartTime,
+                FollowingDayEndTime
             )
         );
     }
@@ -35,11 +28,11 @@ public sealed class EventTests
         (
             () => Event.New
             (
-                Name,
+                AnEventName,
                 null!,
-                Location,
-                StartTime,
-                EndTime
+                AnEventLocation,
+                TomorrowStartTime,
+                FollowingDayEndTime
             )
         );
     }
@@ -51,11 +44,11 @@ public sealed class EventTests
         (
             () => Event.New
             (
-                Name,
-                Description,
+                AnEventName,
+                AnEventDescription,
                 null!,
-                StartTime,
-                EndTime
+                TomorrowStartTime,
+                FollowingDayEndTime
             )
         );
     }
@@ -67,11 +60,11 @@ public sealed class EventTests
         (
             () => Event.New
             (
-                Name,
-                Description,
-                Location,
+                AnEventName,
+                AnEventDescription,
+                AnEventLocation,
                 null!,
-                EndTime
+                FollowingDayEndTime
             )
         );
     }
@@ -83,10 +76,10 @@ public sealed class EventTests
         (
             () => Event.New
             (
-                Name,
-                Description,
-                Location,
-                StartTime,
+                AnEventName,
+                AnEventDescription,
+                AnEventLocation,
+                TomorrowStartTime,
                 null!
             )
         );
@@ -97,21 +90,21 @@ public sealed class EventTests
     {
         Event @event = Event.New
         (
-            Name,
-            Description,
-            Location,
-            StartTime,
-            EndTime
+            AnEventName,
+            AnEventDescription,
+            AnEventLocation,
+            TomorrowStartTime,
+            FollowingDayEndTime
         );
 
         Assert.Multiple
         (
             () => Assert.NotNull(@event.Id),
-            () => Assert.Equal(Name, @event.Name),
-            () => Assert.Equal(Description, @event.Description),
-            () => Assert.Equal(Location, @event.Location),
-            () => Assert.Equal(StartTime, @event.StartTime),
-            () => Assert.Equal(EndTime, @event.EndTime)
+            () => Assert.Equal(AnEventName, @event.Name),
+            () => Assert.Equal(AnEventDescription, @event.Description),
+            () => Assert.Equal(AnEventLocation, @event.Location),
+            () => Assert.Equal(TomorrowStartTime, @event.StartTime),
+            () => Assert.Equal(FollowingDayEndTime, @event.EndTime)
         );
     }
 
@@ -123,11 +116,11 @@ public sealed class EventTests
             () => Event.Of
             (
                 null!,
-                Name,
-                Description,
-                Location,
-                StartTime,
-                EndTime
+                AnEventName,
+                AnEventDescription,
+                AnEventLocation,
+                TomorrowStartTime,
+                FollowingDayEndTime
             )
         );
     }
@@ -139,12 +132,12 @@ public sealed class EventTests
         (
             () => Event.Of
             (
-                new Id(),
+                AnEventId,
                 null!,
-                Description,
-                Location,
-                StartTime,
-                EndTime
+                AnEventDescription,
+                AnEventLocation,
+                TomorrowStartTime,
+                FollowingDayEndTime
             )
         );
     }
@@ -156,12 +149,12 @@ public sealed class EventTests
         (
             () => Event.Of
             (
-                new Id(),
-                Name,
+                AnEventId,
+                AnEventName,
                 null!,
-                Location,
-                StartTime,
-                EndTime
+                AnEventLocation,
+                TomorrowStartTime,
+                FollowingDayEndTime
             )
         );
     }
@@ -173,12 +166,12 @@ public sealed class EventTests
         (
             () => Event.Of
             (
-                new Id(),
-                Name,
-                Description,
+                AnEventId,
+                AnEventName,
+                AnEventDescription,
                 null!,
-                StartTime,
-                EndTime
+                TomorrowStartTime,
+                FollowingDayEndTime
             )
         );
     }
@@ -190,12 +183,12 @@ public sealed class EventTests
         (
             () => Event.Of
             (
-                new Id(),
-                Name,
-                Description,
-                Location,
+                AnEventId,
+                AnEventName,
+                AnEventDescription,
+                AnEventLocation,
                 null!,
-                EndTime
+                FollowingDayEndTime
             )
         );
     }
@@ -207,11 +200,11 @@ public sealed class EventTests
         (
             () => Event.Of
             (
-                new Id(),
-                Name,
-                Description,
-                Location,
-                StartTime,
+                AnEventId,
+                AnEventName,
+                AnEventDescription,
+                AnEventLocation,
+                TomorrowStartTime,
                 null!
             )
         );
@@ -224,35 +217,28 @@ public sealed class EventTests
         Event @event = Event.Of
         (
             id,
-            Name,
-            Description,
-            Location,
-            StartTime,
-            EndTime
+            AnEventName,
+            AnEventDescription,
+            AnEventLocation,
+            TomorrowStartTime,
+            FollowingDayEndTime
         );
 
         Assert.Multiple
         (
             () => Assert.Equal(id, @event.Id),
-            () => Assert.Equal(Name, @event.Name),
-            () => Assert.Equal(Description, @event.Description),
-            () => Assert.Equal(Location, @event.Location),
-            () => Assert.Equal(StartTime, @event.StartTime),
-            () => Assert.Equal(EndTime, @event.EndTime)
+            () => Assert.Equal(AnEventName, @event.Name),
+            () => Assert.Equal(AnEventDescription, @event.Description),
+            () => Assert.Equal(AnEventLocation, @event.Location),
+            () => Assert.Equal(TomorrowStartTime, @event.StartTime),
+            () => Assert.Equal(FollowingDayEndTime, @event.EndTime)
         );
     }
 
     [Fact]
     public void DoesNotAllowAddingOfPendingRegistration_WhenRegistrationIsNull()
     {
-        Event @event = Event.New
-        (
-            Name,
-            Description,
-            Location,
-            StartTime,
-            EndTime
-        );
+        Event @event = ANewEventEntity.Build();
 
         Assert.Throws<ArgumentNullException>(() => @event.Add(null!));
     }
@@ -260,41 +246,15 @@ public sealed class EventTests
     [Fact]
     public void AllowsAddingOfPendingRegistration_WhenRegistrationIsPresent()
     {
-        Id registrationId = new();
-        Id registrationEventId = new();
-        RegistrationName registrationName = new("Jane Doe");
-        RegistrationPhoneNumber registrationPhoneNumber = new("+38155555555");
-        RegistrationEmailAddress registrationEmailAddress = new("jane.doe@email.com");
+        Event @event = ANewEventEntity.Build();
+        Registration registration = ANewRegistrationEntity.Build();
 
-        Event @event = Event.New
-        (
-            Name,
-            Description,
-            Location,
-            StartTime,
-            EndTime
-        );
+        @event.Add(registration);
 
-        @event.Add
+        Assert.Equivalent
         (
-            Registration.Of
-            (
-                registrationId,
-                registrationEventId,
-                registrationName,
-                registrationPhoneNumber,
-                registrationEmailAddress
-            )
-        );
-
-        Registration pendingRegistration = Assert.Single(@event.PendingRegistrations);
-        Assert.Multiple
-        (
-            () => Assert.Equal(registrationId, pendingRegistration.Id),
-            () => Assert.Equal(registrationEventId, pendingRegistration.EventId),
-            () => Assert.Equal(registrationName, pendingRegistration.Name),
-            () => Assert.Equal(registrationPhoneNumber, pendingRegistration.PhoneNumber),
-            () => Assert.Equal(registrationEmailAddress, pendingRegistration.EmailAddress)
+            new[] { registration },
+            @event.PendingRegistrations
         );
     }
 }

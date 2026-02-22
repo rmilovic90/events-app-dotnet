@@ -1,3 +1,5 @@
+using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
+
 namespace Events.Domain.Events;
 
 public sealed class RegistrationEmailAddressTests
@@ -9,8 +11,8 @@ public sealed class RegistrationEmailAddressTests
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyRegistrationEmailAddressValue)]
+    [InlineData(RegistrationEmailAddressValueWithWhitespacesOnly)]
     public void Create_Fails_WhenValueIsBlank(string? value)
     {
         Assert.Throws<ArgumentException>(() => new RegistrationEmailAddress(value!));
@@ -19,9 +21,7 @@ public sealed class RegistrationEmailAddressTests
     [Fact]
     public void Create_Fails_WhenValueIsTooLong()
     {
-        string tooLongEmailAddressValue = new('*', RegistrationEmailAddress.MaxLength + 1);
-
-        Assert.Throws<ArgumentException>(() => new RegistrationEmailAddress(tooLongEmailAddressValue));
+        Assert.Throws<ArgumentException>(() => new RegistrationEmailAddress(TooLongRegistrationEmailAddressValue));
     }
 
     [Theory]
@@ -40,10 +40,8 @@ public sealed class RegistrationEmailAddressTests
     [Fact]
     public void Create_Succeeds_WhenValueIsProvided()
     {
-        const string emailAddressValue = "jane.doe@email.com";
+        RegistrationEmailAddress emailAddress = new(ARegistrationEmailAddressValue);
 
-        RegistrationEmailAddress emailAddress = new(emailAddressValue);
-
-        Assert.Equal(new(emailAddressValue), emailAddress);
+        Assert.Equal(new(ARegistrationEmailAddressValue), emailAddress);
     }
 }

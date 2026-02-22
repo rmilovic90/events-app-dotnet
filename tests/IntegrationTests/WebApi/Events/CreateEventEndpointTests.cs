@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 
-using static Events.WebApi.Common.Events.EventResourceBuilder;
+using static Events.WebApi.Events.EventResourceBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
 using EventResource = Events.WebApi.Events.Event;
@@ -20,6 +20,7 @@ namespace Events.WebApi.Events;
 
 public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 {
+    private static readonly EventResource InvalidEvent = new();
     private static readonly EventResource ValidEvent = AnEventResource.Build();
 
     private readonly IEventsRepository _repositoryMock;
@@ -51,9 +52,7 @@ public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFacto
     [Fact]
     public async Task PostEvent_ReturnsResponseWithBadRequestStatusCode_WhenResourceIsInvalid()
     {
-        EventResource invalidEvent = new();
-
-        HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.CreateRoute, invalidEvent, TestContext.Current.CancellationToken);
+        HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.CreateRoute, InvalidEvent, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

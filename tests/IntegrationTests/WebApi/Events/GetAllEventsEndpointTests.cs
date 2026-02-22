@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 
-using static Events.WebApi.Common.Events.EventEntityBuilder;
+using static Events.Domain.Events.EventEntityBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
 using EventResource = Events.WebApi.Events.Event;

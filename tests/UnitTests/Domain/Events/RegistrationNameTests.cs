@@ -1,3 +1,5 @@
+using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
+
 namespace Events.Domain.Events;
 
 public sealed class RegistrationNameTests
@@ -9,8 +11,8 @@ public sealed class RegistrationNameTests
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyRegistrationNameValue)]
+    [InlineData(RegistrationNameValueWithWhitespacesOnly)]
     public void Create_Fails_WhenValueIsBlank(string? value)
     {
         Assert.Throws<ArgumentException>(() => new RegistrationName(value!));
@@ -19,18 +21,14 @@ public sealed class RegistrationNameTests
     [Fact]
     public void Create_Fails_WhenValueIsTooLong()
     {
-        string tooLongNameValue = new('*', RegistrationName.MaxLength + 1);
-
-        Assert.Throws<ArgumentException>(() => new RegistrationName(tooLongNameValue));
+        Assert.Throws<ArgumentException>(() => new RegistrationName(TooLongRegistrationNameValue));
     }
 
     [Fact]
     public void Create_Succeeds_WhenValueIsProvided()
     {
-        const string nameValue = "Jane Doe";
+        RegistrationName name = new(ARegistrationEmailAddressValue);
 
-        RegistrationName name = new(nameValue);
-
-        Assert.Equal(new(nameValue), name);
+        Assert.Equal(new(ARegistrationEmailAddressValue), name);
     }
 }

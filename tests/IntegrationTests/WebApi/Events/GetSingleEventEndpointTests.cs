@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 
-using static Events.WebApi.Common.Events.EventEntityBuilder;
+using static Events.Domain.Events.EventEntityBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
 using EventResource = Events.WebApi.Events.Event;
@@ -19,9 +19,7 @@ namespace Events.WebApi.Events;
 
 public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 {
-    private const string EventId = "019c770f-52d0-7656-9298-adeecf45987a";
-
-    private static readonly string RequestUrl = Endpoints.GetSingleRoute.Replace("{id}", EventId);
+    private static readonly string RequestUrl = Endpoints.GetSingleRoute.Replace("{id}", AnEventIdValue);
 
     private readonly IEventsRepository _repositoryMock;
     private readonly HttpClient _httpClient;
@@ -40,7 +38,7 @@ public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFa
     [Fact]
     public async Task Get_ReturnsResponseWithNotFoundStatusCode_WhenEventWithIdFromUrlIsNotFound()
     {
-        _repositoryMock.Get(new Id(EventId), Arg.Any<CancellationToken>())
+        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns((EventEntity?)null);
 
         HttpResponseMessage response = await _httpClient.GetAsync(RequestUrl, TestContext.Current.CancellationToken);
@@ -51,11 +49,11 @@ public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFa
     [Fact]
     public async Task Get_ReturnsResponseWithOkStatusCode_WhenEventWithIdFromUrlIsFound()
     {
-        _repositoryMock.Get(new Id(EventId), Arg.Any<CancellationToken>())
+        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns
             (
                 ANewEventEntity
-                    .WithId(EventId)
+                    .WithId(AnEventIdValue)
                     .Build()
             );
 
@@ -68,10 +66,10 @@ public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFa
     public async Task Get_ReturnsResponseWithEventBody_WhenEventWithIdFromUrlIsFound()
     {
         EventEntity @event = ANewEventEntity
-            .WithId(EventId)
+            .WithId(AnEventIdValue)
             .Build();
 
-        _repositoryMock.Get(new Id(EventId), Arg.Any<CancellationToken>())
+        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns(@event);
 
         HttpResponseMessage response = await _httpClient.GetAsync(RequestUrl, TestContext.Current.CancellationToken);

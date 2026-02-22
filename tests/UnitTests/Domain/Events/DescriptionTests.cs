@@ -1,3 +1,5 @@
+using static Events.Domain.Events.EventEntityBuilder;
+
 namespace Events.Domain.Events;
 
 public sealed class DescriptionTests
@@ -9,8 +11,8 @@ public sealed class DescriptionTests
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyEventDescriptionValue)]
+    [InlineData(EventDescriptionValueWithWhitespacesOnly)]
     public void Create_Fails_WhenValueIsBlank(string? value)
     {
         Assert.Throws<ArgumentException>(() => new Description(value!));
@@ -19,18 +21,14 @@ public sealed class DescriptionTests
     [Fact]
     public void Create_Fails_WhenValueIsTooLong()
     {
-        string tooLongDescriptionValue = new('*', Description.MaxLength + 1);
-
-        Assert.Throws<ArgumentException>(() => new Description(tooLongDescriptionValue));
+        Assert.Throws<ArgumentException>(() => new Description(TooLongEventDescriptionValue));
     }
 
     [Fact]
     public void Create_Succeeds_WhenValueIsProvided()
     {
-        const string descriptionValue = "Test";
+        Description description = new(AnEventDescriptionValue);
 
-        Description description = new(descriptionValue);
-
-        Assert.Equal(new(descriptionValue), description);
+        Assert.Equal(new(AnEventDescriptionValue), description);
     }
 }

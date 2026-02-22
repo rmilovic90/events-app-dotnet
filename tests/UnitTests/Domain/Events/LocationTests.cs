@@ -1,3 +1,5 @@
+using static Events.Domain.Events.EventEntityBuilder;
+
 namespace Events.Domain.Events;
 
 public sealed class LocationTests
@@ -9,8 +11,8 @@ public sealed class LocationTests
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyEventLocationValue)]
+    [InlineData(EventLocationValueWithWhitespacesOnly)]
     public void Create_Fails_WhenValueIsBlank(string? value)
     {
         Assert.Throws<ArgumentException>(() => new Location(value!));
@@ -21,16 +23,14 @@ public sealed class LocationTests
     {
         string tooLongLocationValue = new('*', Location.MaxLength + 1);
 
-        Assert.Throws<ArgumentException>(() => new Location(tooLongLocationValue));
+        Assert.Throws<ArgumentException>(() => new Location(TooLongEventLocationValue));
     }
 
     [Fact]
     public void Create_Succeeds_WhenValueIsProvided()
     {
-        const string locationValue = "Test";
+        Location location = new(AnEventLocationValue);
 
-        Location location = new(locationValue);
-
-        Assert.Equal(new(locationValue), location);
+        Assert.Equal(new(AnEventLocationValue), location);
     }
 }

@@ -5,8 +5,8 @@ using Npgsql;
 using Testcontainers.PostgreSql;
 using Testcontainers.Xunit;
 
-using static Events.WebApi.Common.Events.EventEntityBuilder;
-using static Events.WebApi.Common.Events.Registrations.RegistrationEntityBuilder;
+using static Events.Domain.Events.EventEntityBuilder;
+using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
 using RegistrationEntity = Events.Domain.Events.Registration;
@@ -18,7 +18,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     [Fact]
     public async Task ReturnsAllSavedEvents()
     {
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
+        await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
 
         await SetupDatabase(dataSource);
 
@@ -50,7 +50,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     [Fact]
     public async Task DoesNotFindEvent_WhenEventWithGivenIdDoesNotExist()
     {
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
+        await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
 
         await SetupDatabase(dataSource);
 
@@ -64,7 +64,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     [Fact]
     public async Task FindsEvent_WhenEventWithGivenIdExists()
     {
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
+        await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
 
         await SetupDatabase(dataSource);
 
@@ -91,7 +91,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     [Fact]
     public async Task ReturnsAllEventRegistrations()
     {
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
+        await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
 
         await SetupDatabase(dataSource);
 
@@ -131,7 +131,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     [Fact]
     public async Task SavesNewEvent()
     {
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
+        await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
 
         await SetupDatabase(dataSource);
 
@@ -141,7 +141,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
 
         await repository.Save(eventToSave, TestContext.Current.CancellationToken);
 
-        using NpgsqlDataReader reader = await GetEvent(dataSource, eventToSave);
+        await using NpgsqlDataReader reader = await GetEvent(dataSource, eventToSave);
         await reader.ReadAsync(TestContext.Current.CancellationToken);
 
         Assert.True(reader.HasRows);
@@ -161,7 +161,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     [Fact]
     public async Task SavesRegistrationWithExistingEvent()
     {
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
+        await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
 
         await SetupDatabase(dataSource);
 
@@ -179,7 +179,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
 
         await repository.Save(@event, TestContext.Current.CancellationToken);
 
-        using NpgsqlDataReader reader = await GetEventRegistrations(dataSource, @event);
+        await using NpgsqlDataReader reader = await GetEventRegistrations(dataSource, @event);
         await reader.ReadAsync(TestContext.Current.CancellationToken);
 
         Assert.True(reader.HasRows);
@@ -197,25 +197,25 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
 
     private static async Task SetupDatabase(NpgsqlDataSource dataSource)
     {
-        using NpgsqlCommand command = dataSource.CreateCommand();
+        await using NpgsqlCommand command = dataSource.CreateCommand();
         command.CommandText = await File.ReadAllTextAsync("setup-database.sql", TestContext.Current.CancellationToken);
 
         await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
     }
 
-    private static Task<NpgsqlDataReader> GetEvent(NpgsqlDataSource dataSource, EventEntity @event)
+    private static async Task<NpgsqlDataReader> GetEvent(NpgsqlDataSource dataSource, EventEntity @event)
     {
-        using NpgsqlCommand getEventByIdQuery = dataSource.CreateCommand();
+        await using NpgsqlCommand getEventByIdQuery = dataSource.CreateCommand();
         getEventByIdQuery.CommandText = $"SELECT * FROM events WHERE id = '{@event.Id}'";
 
-        return getEventByIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+        return await getEventByIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
     }
 
-    private static Task<NpgsqlDataReader> GetEventRegistrations(NpgsqlDataSource dataSource, EventEntity @event)
+    private static async Task<NpgsqlDataReader> GetEventRegistrations(NpgsqlDataSource dataSource, EventEntity @event)
     {
-        using NpgsqlCommand getRegistrationsByEventIdQuery = dataSource.CreateCommand();
+        await using NpgsqlCommand getRegistrationsByEventIdQuery = dataSource.CreateCommand();
         getRegistrationsByEventIdQuery.CommandText = $"SELECT * FROM registrations WHERE event_id = '{@event.Id}'";
 
-        return getRegistrationsByEventIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+        return await getRegistrationsByEventIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
     }
 }

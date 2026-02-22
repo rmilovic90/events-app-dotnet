@@ -1,3 +1,5 @@
+using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
+
 namespace Events.Domain.Events;
 
 public sealed class RegistrationPhoneNumberTests
@@ -9,8 +11,8 @@ public sealed class RegistrationPhoneNumberTests
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyRegistrationPhoneNumberValue)]
+    [InlineData(RegistrationPhoneNumberValueWithWhitespacesOnly)]
     public void Create_Fails_WhenValueIsBlank(string? value)
     {
         Assert.Throws<ArgumentException>(() => new RegistrationPhoneNumber(value!));
@@ -30,10 +32,8 @@ public sealed class RegistrationPhoneNumberTests
     [Fact]
     public void Create_Succeeds_WhenValueIsProvided()
     {
-        const string phoneNumberValue = "+38155555555";
+        RegistrationPhoneNumber phoneNumber = new(ARegistrationPhoneNumberValue);
 
-        RegistrationPhoneNumber phoneNumber = new(phoneNumberValue);
-
-        Assert.Equal(new(phoneNumberValue), phoneNumber);
+        Assert.Equal(new(ARegistrationPhoneNumberValue), phoneNumber);
     }
 }

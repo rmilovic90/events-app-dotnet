@@ -1,8 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-using Events.Domain.Events;
-
-using static Events.WebApi.Common.Events.EventResourceBuilder;
+using static Events.WebApi.Events.EventResourceBuilder;
 
 namespace Events.WebApi.Events;
 
@@ -10,8 +8,8 @@ public sealed class EventResourceValidationTests
 {
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyEventName)]
+    [InlineData(EventNameWithWhitespacesOnly)]
     public void Validation_Fails_WhenNameIsMissing(string? name)
     {
         Event invalidEvent = AnEventResource
@@ -37,7 +35,7 @@ public sealed class EventResourceValidationTests
     public void Validation_Fails_WhenNameIsTooLong()
     {
         Event invalidEvent = AnEventResource
-            .WithName(new string('*', Name.MaxLength + 1))
+            .WithName(TooLongEventName)
             .Build();
 
         List<ValidationResult> validationResults = [];
@@ -57,8 +55,8 @@ public sealed class EventResourceValidationTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyEventDescription)]
+    [InlineData(EventDescriptionWithWhitespacesOnly)]
     public void Validation_Fails_WhenDescriptionIsMissing(string? description)
     {
         Event invalidEvent = AnEventResource
@@ -84,7 +82,7 @@ public sealed class EventResourceValidationTests
     public void Validation_Fails_WhenDescriptionIsTooLong()
     {
         Event invalidEvent = AnEventResource
-            .WithDescription(new string('*', Description.MaxLength + 1))
+            .WithDescription(TooLongEventDescription)
             .Build();
 
         List<ValidationResult> validationResults = [];
@@ -104,8 +102,8 @@ public sealed class EventResourceValidationTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyEventLocation)]
+    [InlineData(EventLocationWithWhitespacesOnly)]
     public void Validation_Fails_WhenLocationIsMissing(string? location)
     {
         Event invalidEvent = AnEventResource
@@ -131,7 +129,7 @@ public sealed class EventResourceValidationTests
     public void Validation_Fails_WhenLocationIsTooLong()
     {
         Event invalidEvent = AnEventResource
-            .WithLocation(new string('*', Location.MaxLength + 1))
+            .WithLocation(TooLongEventLocation)
             .Build();
 
         List<ValidationResult> validationResults = [];
@@ -153,7 +151,7 @@ public sealed class EventResourceValidationTests
     public void Validation_Fails_WhenStartTimeIsNotInTheFuture()
     {
         Event invalidEvent = AnEventResource
-            .WithStartTime(DateTimeOffset.UtcNow.AddDays(-1))
+            .WithStartTime(YesterdayEventTime)
             .Build();
 
         List<ValidationResult> validationResults = [];
@@ -175,8 +173,8 @@ public sealed class EventResourceValidationTests
     public void Validation_Fails_WhenEndTimeIsNotAfterStartTime()
     {
         Event invalidEvent = AnEventResource
-            .WithStartTime(DateTimeOffset.UtcNow.AddDays(1))
-            .WithEndTime(DateTimeOffset.UtcNow)
+            .WithStartTime(TomorrowEventTime)
+            .WithEndTime(TodayEventTime)
             .Build();
 
         List<ValidationResult> validationResults = [];

@@ -1,3 +1,5 @@
+using static Events.Domain.Events.EventEntityBuilder;
+
 namespace Events.Domain.Events;
 
 public sealed class NameTests
@@ -9,8 +11,8 @@ public sealed class NameTests
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyEventNameValue)]
+    [InlineData(EventNameValueWithWhitespacesOnly)]
     public void Create_Fails_WhenValueIsBlank(string? value)
     {
         Assert.Throws<ArgumentException>(() => new Name(value!));
@@ -19,18 +21,14 @@ public sealed class NameTests
     [Fact]
     public void Create_Fails_WhenValueIsTooLong()
     {
-        string tooLongNameValue = new('*', Name.MaxLength + 1);
-
-        Assert.Throws<ArgumentException>(() => new Name(tooLongNameValue));
+        Assert.Throws<ArgumentException>(() => new Name(TooLongEventNameValue));
     }
 
     [Fact]
     public void Create_Succeeds_WhenValueIsProvided()
     {
-        const string nameValue = "Test";
+        Name name = new(AnEventNameValue);
 
-        Name name = new(nameValue);
-
-        Assert.Equal(new(nameValue), name);
+        Assert.Equal(new(AnEventNameValue), name);
     }
 }

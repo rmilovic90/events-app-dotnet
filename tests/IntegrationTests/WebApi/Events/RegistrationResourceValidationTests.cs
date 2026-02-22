@@ -1,8 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-using Events.Domain.Events;
-
-using static Events.WebApi.Common.Events.Registrations.RegistrationResourceBuilder;
+using static Events.WebApi.Events.Registrations.RegistrationResourceBuilder;
 
 namespace Events.WebApi.Events;
 
@@ -10,8 +8,8 @@ public sealed class RegistrationResourceValidationTests
 {
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyRegistrationName)]
+    [InlineData(RegistrationNameWithWhitespacesOnly)]
     public void Validation_Fails_WhenNameIsMissing(string? name)
     {
         Registration invalidEventRegistration = ARegistrationResource
@@ -37,7 +35,7 @@ public sealed class RegistrationResourceValidationTests
     public void Validation_Fails_WhenNameIsTooLong()
     {
         Registration invalidEventRegistration = ARegistrationResource
-            .WithName(new string('*', RegistrationName.MaxLength + 1))
+            .WithName(TooLongRegistrationName)
             .Build();
 
         List<ValidationResult> validationResults = [];
@@ -57,8 +55,8 @@ public sealed class RegistrationResourceValidationTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyRegistrationPhoneNumber)]
+    [InlineData(RegistrationPhoneNumberWithWhitespacesOnly)]
     public void Validation_Fails_WhenPhoneNumberIsMissing(string? phoneNumber)
     {
         Registration invalidEventRegistration = ARegistrationResource
@@ -84,7 +82,7 @@ public sealed class RegistrationResourceValidationTests
     public void Validation_Fails_WhenPhoneNumberHasInvalidFormat()
     {
         Registration invalidEventRegistration = ARegistrationResource
-            .WithPhoneNumber("+381aa")
+            .WithPhoneNumber(RegistrationPhoneNumberWithInvalidFormat)
             .Build();
 
         List<ValidationResult> validationResults = [];
@@ -104,8 +102,8 @@ public sealed class RegistrationResourceValidationTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyRegistrationEmailAddress)]
+    [InlineData(RegistrationEmailAddressWithWhitespacesOnly)]
     public void Validation_Fails_WhenEmailAddressIsMissing(string? emailAddress)
     {
         Registration invalidEventRegistration = ARegistrationResource
@@ -131,7 +129,7 @@ public sealed class RegistrationResourceValidationTests
     public void Validation_Fails_WhenEmailAddressIsTooLong()
     {
         Registration invalidEventRegistration = ARegistrationResource
-            .WithEmailAddress($"{new string('*', RegistrationEmailAddress.MaxLength + 1)}@email.com")
+            .WithEmailAddress(TooLongRegistrationEmailAddress)
             .Build();
 
         List<ValidationResult> validationResults = [];
@@ -153,7 +151,7 @@ public sealed class RegistrationResourceValidationTests
     public void Validation_Fails_WhenEmailAddressHasInvalidFormat()
     {
         Registration invalidEventRegistration = ARegistrationResource
-            .WithEmailAddress("email")
+            .WithEmailAddress(RegistrationEmailAddressWithInvalidFormat)
             .Build();
 
         List<ValidationResult> validationResults = [];

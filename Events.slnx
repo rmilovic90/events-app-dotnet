@@ -5,8 +5,10 @@
   </Folder>
 
   <Folder Name="/tests/">
+    <Project Path="tests/Domain/Domain.csproj" />
     <Project Path="tests/FunctionalTests/FunctionalTests.csproj" />
     <Project Path="tests/IntegrationTests/IntegrationTests.csproj" />
     <Project Path="tests/UnitTests/UnitTests.csproj" />
+    <Project Path="tests/WebApi/WebApi.csproj" />
   </Folder>
 </Solution>
