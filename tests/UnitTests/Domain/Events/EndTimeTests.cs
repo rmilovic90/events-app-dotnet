@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Time.Testing;
-
 namespace Events.Domain.Events;
 
 public sealed class EndTimeTests
@@ -9,10 +7,10 @@ public sealed class EndTimeTests
     private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
 
     [Fact]
-    public void Create_Fails_WhenBeforeStartTime()
+    public void CreationOfNewEndTime_Fails_WhenBeforeStartTime()
     {
         DateTimeOffset utcYesteday = UtcNow.Date.AddDays(-1);
-        StartTime startTime = StartTime.New
+        StartTime startTime = StartTime.Of
         (
             new DateTimeOffset
             (
@@ -23,26 +21,25 @@ public sealed class EndTimeTests
                 UtcTomorrow.Minute,
                 UtcTomorrow.Second,
                 CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)
-            ),
-            new FakeTimeProvider(UtcNow)
+            )
         );
 
-        Assert.Throws<ArgumentException>(() => EndTime.Of(utcYesteday, startTime));
+        Assert.Throws<ArgumentException>(() => EndTime.New(utcYesteday, startTime));
     }
 
     [Fact]
-    public void Create_Fails_WhenValueIsSameAsStartTime()
+    public void CreationOfNewEndTime_Fails_WhenValueIsSameAsStartTime()
     {
-        StartTime startTime = StartTime.New(UtcTomorrow, new FakeTimeProvider(UtcNow));
+        StartTime startTime = StartTime.Of(UtcTomorrow);
 
-        Assert.Throws<ArgumentException>(() => EndTime.Of(UtcTomorrow, startTime));
+        Assert.Throws<ArgumentException>(() => EndTime.New(UtcTomorrow, startTime));
     }
 
     [Fact]
-    public void Create_Succeeds_WhenValueIsAfterStartTime()
+    public void CreationOfNewEndTime_Succeeds_WhenValueIsAfterStartTime()
     {
         DateTimeOffset utcDayAfterTomorrow = UtcTomorrow.AddDays(1);
-        StartTime startTime = StartTime.New
+        StartTime startTime = StartTime.Of
         (
             new DateTimeOffset
             (
@@ -53,11 +50,10 @@ public sealed class EndTimeTests
                 UtcTomorrow.Minute,
                 UtcTomorrow.Second,
                 CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)
-            ),
-            new FakeTimeProvider(UtcNow)
+            )
         );
 
-        EndTime endTime = EndTime.Of(utcDayAfterTomorrow, startTime);
+        EndTime endTime = EndTime.New(utcDayAfterTomorrow, startTime);
 
         Assert.Equal(utcDayAfterTomorrow, endTime.Value);
     }

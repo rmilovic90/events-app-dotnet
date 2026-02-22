@@ -52,18 +52,15 @@ public sealed class Event
     [Description("Local end time of the event. Must be after start time.")]
     public DateTimeOffset EndTime { get; set; } = DateTimeOffset.UtcNow;
 
-    public EventEntity AsEntity()
-    {
-        EventStartTime startTime = EventStartTime.New(StartTime, TimeProvider.System);
-        return EventEntity.New
+    public EventEntity AsEntity() =>
+        EventEntity.New
         (
             new EventName(Name),
             new EventDescription(Description),
             new EventLocation(Location),
-            startTime,
-            EventEndTime.Of(EndTime, startTime)
+            EventStartTime.Of(StartTime),
+            EventEndTime.Of(EndTime)
         );
-    }
 }
 
 public sealed class Registration

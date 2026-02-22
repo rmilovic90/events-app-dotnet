@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Time.Testing;
-
 namespace Events.Domain.Events;
 
 public sealed class EventTests
@@ -11,8 +9,8 @@ public sealed class EventTests
     private static readonly Name Name = new("Test");
     private static readonly Description Description = new("Test event.");
     private static readonly Location Location = new("Novi Sad, Serbia");
-    private static readonly StartTime StartTime = StartTime.New(UtcTomorrow, new FakeTimeProvider(UtcNow));
-    private static readonly EndTime EndTime = EndTime.Of(UtcDayAfterTomorrow, StartTime);
+    private static readonly StartTime StartTime = StartTime.Of(UtcTomorrow);
+    private static readonly EndTime EndTime = EndTime.Of(UtcDayAfterTomorrow);
 
     [Fact]
     public void CreateOfNewEvent_Fails_WhenNameIsNull()

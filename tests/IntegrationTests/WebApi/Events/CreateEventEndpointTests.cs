@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 
+using static Events.WebApi.Common.Events.EventResourceBuilder;
+
 using EventEntity = Events.Domain.Events.Event;
 using EventResource = Events.WebApi.Events.Event;
 
@@ -18,23 +20,7 @@ namespace Events.WebApi.Events;
 
 public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 {
-    private const string Name = "Test";
-    private const string Description = "Test event.";
-    private const string Location = "Novi Sad, Serbia";
-
-    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.AddDays(1);
-    private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-    private static readonly DateTimeOffset StartTime = new(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 14, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow));
-    private static readonly DateTimeOffset EndTime = new(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 15, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow));
-
-    private static readonly EventResource ValidEvent = new()
-    {
-        Name = Name,
-        Description = Description,
-        Location = Location,
-        StartTime = StartTime,
-        EndTime = EndTime
-    };
+    private static readonly EventResource ValidEvent = AnEventResource.Build();
 
     private readonly IEventsRepository _repositoryMock;
     private readonly HttpClient _httpClient;
@@ -76,11 +62,13 @@ public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFacto
     public async Task PostEvent_ReturnsValidationErrorsInResponseBody_WhenResourceIsInvalid()
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
-        EventResource invalidEvent = new()
-        {
-            StartTime = now,
-            EndTime = now
-        };
+        EventResource invalidEvent = AnEventResource
+            .WithoutName()
+            .WithoutDescription()
+            .WithoutLocation()
+            .WithStartTime(now)
+            .WithEndTime(now)
+            .Build();
 
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.CreateRoute, invalidEvent, TestContext.Current.CancellationToken);
 
@@ -109,21 +97,14 @@ public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFacto
 
         await _httpClient.PostAsJsonAsync(Endpoints.CreateRoute, ValidEvent, TestContext.Current.CancellationToken);
 
-        await _repositoryMock.Received(1)
-            .Save
-            (
-                Arg.Any<EventEntity>(),
-                Arg.Any<CancellationToken>()
-            );
-
         Assert.Multiple
         (
             () => Assert.NotNull(savedEvent.Id),
-            () => Assert.Equal(Name, savedEvent.Name.ToString()),
-            () => Assert.Equal(Description, savedEvent.Description.ToString()),
-            () => Assert.Equal(Location, savedEvent.Location.ToString()),
-            () => Assert.Equal(StartTime, savedEvent.StartTime.Value),
-            () => Assert.Equal(EndTime, savedEvent.EndTime.Value)
+            () => Assert.Equal(ValidEvent.Name, savedEvent.Name.ToString()),
+            () => Assert.Equal(ValidEvent.Description, savedEvent.Description.ToString()),
+            () => Assert.Equal(ValidEvent.Location, savedEvent.Location.ToString()),
+            () => Assert.Equal(ValidEvent.StartTime, savedEvent.StartTime.Value),
+            () => Assert.Equal(ValidEvent.EndTime, savedEvent.EndTime.Value)
         );
     }
 
@@ -138,13 +119,6 @@ public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFacto
     [Fact]
     public async Task PostEvent_ReturnsResponseWithEventBody_WhenResourceIsValid()
     {
-        EventEntity savedEvent = null!;
-        await _repositoryMock.Save
-        (
-            Arg.Do<EventEntity>(@event => savedEvent = @event),
-            Arg.Any<CancellationToken>()
-        );
-
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.CreateRoute, ValidEvent, TestContext.Current.CancellationToken);
 
         EventResource? @event = await response.Content.ReadFromJsonAsync<EventResource>(TestContext.Current.CancellationToken);
@@ -152,12 +126,12 @@ public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFacto
         Assert.NotNull(@event);
         Assert.Multiple
         (
-            () => Assert.Equal(savedEvent.Id.ToString(), @event.Id!),
-            () => Assert.Equal(savedEvent.Name.ToString(), @event.Name),
-            () => Assert.Equal(savedEvent.Description.ToString(), @event.Description),
-            () => Assert.Equal(savedEvent.Location.ToString(), @event.Location),
-            () => Assert.Equal(savedEvent.StartTime.Value, @event.StartTime),
-            () => Assert.Equal(savedEvent.EndTime.Value, @event.EndTime)
+            () => Assert.NotEmpty(@event.Id!),
+            () => Assert.Equal(ValidEvent.Name.ToString(), @event.Name),
+            () => Assert.Equal(ValidEvent.Description.ToString(), @event.Description),
+            () => Assert.Equal(ValidEvent.Location.ToString(), @event.Location),
+            () => Assert.Equal(ValidEvent.StartTime, @event.StartTime),
+            () => Assert.Equal(ValidEvent.EndTime, @event.EndTime)
         );
     }
 }

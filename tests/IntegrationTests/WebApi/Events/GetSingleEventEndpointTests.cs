@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NSubstitute;
 
+using static Events.WebApi.Common.Events.EventEntityBuilder;
+
 using EventEntity = Events.Domain.Events.Event;
 using EventResource = Events.WebApi.Events.Event;
 
@@ -20,11 +22,6 @@ public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFa
     private const string EventId = "019c770f-52d0-7656-9298-adeecf45987a";
 
     private static readonly string RequestUrl = Endpoints.GetSingleRoute.Replace("{id}", EventId);
-
-    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.AddDays(1);
-    private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-    private static readonly DateTimeOffset StartTimeValue = new(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 14, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow));
-    private static readonly DateTimeOffset EndTimeValue = new(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 15, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow));
 
     private readonly IEventsRepository _repositoryMock;
     private readonly HttpClient _httpClient;
@@ -57,15 +54,9 @@ public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFa
         _repositoryMock.Get(new Id(EventId), Arg.Any<CancellationToken>())
             .Returns
             (
-                EventEntity.Of
-                (
-                    new Id(),
-                    new Name("Test 1"),
-                    new Description("Test event 1."),
-                    new Location("Novi Sad, Serbia"),
-                    StartTime.Of(StartTimeValue),
-                    EndTime.Of(EndTimeValue, StartTime.Of(StartTimeValue))
-                )
+                ANewEventEntity
+                    .WithId(EventId)
+                    .Build()
             );
 
         HttpResponseMessage response = await _httpClient.GetAsync(RequestUrl, TestContext.Current.CancellationToken);
@@ -76,15 +67,9 @@ public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFa
     [Fact]
     public async Task Get_ReturnsResponseWithEventBody_WhenEventWithIdFromUrlIsFound()
     {
-        EventEntity @event = EventEntity.Of
-        (
-            new Id(),
-            new Name("Test 1"),
-            new Description("Test event 1."),
-            new Location("Novi Sad, Serbia"),
-            StartTime.Of(StartTimeValue),
-            EndTime.Of(EndTimeValue, StartTime.Of(StartTimeValue))
-        );
+        EventEntity @event = ANewEventEntity
+            .WithId(EventId)
+            .Build();
 
         _repositoryMock.Get(new Id(EventId), Arg.Any<CancellationToken>())
             .Returns(@event);
@@ -93,18 +78,6 @@ public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFa
 
         EventResource? eventResource = await response.Content.ReadFromJsonAsync<EventResource>(TestContext.Current.CancellationToken);
 
-        Assert.Equivalent
-        (
-            new EventResource
-            {
-                Id = @event.Id.ToString(),
-                Name = @event.Name.ToString(),
-                Description = @event.Description.ToString(),
-                Location = @event.Location.ToString(),
-                StartTime = @event.StartTime.Value,
-                EndTime = @event.EndTime.Value
-            },
-            eventResource
-        );
+        Assert.Equivalent(EventResource.FromEntity(@event), eventResource);
     }
 }

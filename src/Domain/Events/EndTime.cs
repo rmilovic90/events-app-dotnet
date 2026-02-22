@@ -2,7 +2,7 @@ namespace Events.Domain.Events;
 
 public sealed record EndTime
 {
-    public static EndTime Of(DateTimeOffset value, StartTime startTime)
+    public static EndTime New(DateTimeOffset value, StartTime startTime)
     {
         ArgumentException.ThrowIfUnfulfilled
         (
@@ -13,6 +13,8 @@ public sealed record EndTime
 
         return new(value);
     }
+
+    public static EndTime Of(DateTimeOffset value) => new(value);
 
     public DateTimeOffset Value { get; }
 

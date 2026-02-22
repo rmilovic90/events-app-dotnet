@@ -1,10 +1,12 @@
 using Events.Domain;
-using Events.Domain.Events;
 
 using Npgsql;
 
 using Testcontainers.PostgreSql;
 using Testcontainers.Xunit;
+
+using static Events.WebApi.Common.Events.EventEntityBuilder;
+using static Events.WebApi.Common.Events.Registrations.RegistrationEntityBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
 using RegistrationEntity = Events.Domain.Events.Registration;
@@ -13,45 +15,6 @@ namespace Events.WebApi.Events;
 
 public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : ContainerTest<PostgreSqlBuilder, PostgreSqlContainer>(testOutputHelper)
 {
-    private static readonly DateTimeOffset UtcNow = DateTimeOffset.UtcNow;
-    private static readonly DateTimeOffset UtcTomorrow = UtcNow.AddDays(1);
-    private static readonly DateTimeOffset UtcDayAfterTomorrow = UtcTomorrow.AddDays(1);
-    private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-    private static readonly StartTime StartTime = StartTime.Of
-    (
-        new DateTimeOffset
-        (
-            UtcTomorrow.Year,
-            UtcTomorrow.Month,
-            UtcTomorrow.Day,
-            UtcTomorrow.Hour,
-            UtcTomorrow.Minute,
-            UtcTomorrow.Second,
-            CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)
-        )
-    );
-    private static EventEntity Event => EventEntity.New
-    (
-        new Name("Test"),
-        new Description("Test event."),
-        new Location("Novi Sad, Serbia"),
-        StartTime,
-        EndTime.Of
-        (
-            new DateTimeOffset
-            (
-                UtcDayAfterTomorrow.Year,
-                UtcDayAfterTomorrow.Month,
-                UtcDayAfterTomorrow.Day,
-                UtcDayAfterTomorrow.Hour,
-                UtcDayAfterTomorrow.Minute,
-                UtcDayAfterTomorrow.Second,
-                CentralEuropeanTimeZone.GetUtcOffset(UtcDayAfterTomorrow)
-            ),
-            StartTime
-        )
-    );
-
     [Fact]
     public async Task ReturnsAllSavedEvents()
     {
@@ -59,8 +22,16 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
 
         await SetupDatabase(dataSource);
 
-        EventEntity firstEvent = Event;
-        EventEntity secondEvent = Event;
+        EventEntity firstEvent = ANewEventEntity
+            .WithName("Test 1")
+            .WithDescription("Test event 1.")
+            .WithLocation("Novi Sad, Serbia")
+            .Build();
+        EventEntity secondEvent = ANewEventEntity
+            .WithName("Test 2")
+            .WithDescription("Test event 2.")
+            .WithLocation("Novi Sad, Serbia")
+            .Build();
 
         Repository repository = new(Container.GetConnectionString());
 
@@ -99,7 +70,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
 
         Repository repository = new(Container.GetConnectionString());
 
-        EventEntity eventToSave = Event;
+        EventEntity eventToSave = ANewEventEntity.Build();
 
         await repository.Save(eventToSave, TestContext.Current.CancellationToken);
 
@@ -124,26 +95,24 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
 
         await SetupDatabase(dataSource);
 
-        EventEntity @event = Event;
+        EventEntity @event = ANewEventEntity.Build();
 
         Repository repository = new(Container.GetConnectionString());
 
         await repository.Save(@event, TestContext.Current.CancellationToken);
 
-        RegistrationEntity firstEventRegistration = RegistrationEntity.New
-        (
-            @event.Id,
-            new RegistrationName("Jane Doe"),
-            new RegistrationPhoneNumber("+38155555555"),
-            new RegistrationEmailAddress("jane.doe@email.com")
-        );
-        RegistrationEntity secondEventRegistration = RegistrationEntity.New
-        (
-            @event.Id,
-            new RegistrationName("John Doe"),
-            new RegistrationPhoneNumber("+38155666666"),
-            new RegistrationEmailAddress("john.doe@email.com")
-        );
+        RegistrationEntity firstEventRegistration = ANewRegistrationEntity
+            .WithEventId(@event.Id)
+            .WithName("Jane Doe")
+            .WithPhoneNumber("+38155555555")
+            .WithEmailAddress("jane.doe@email.com")
+            .Build();
+        RegistrationEntity secondEventRegistration = ANewRegistrationEntity
+            .WithEventId(@event.Id)
+            .WithName("John Doe")
+            .WithPhoneNumber("+38155666666")
+            .WithEmailAddress("john.doe@email.com")
+            .Build();
 
         @event.Add(firstEventRegistration);
         @event.Add(secondEventRegistration);
@@ -168,7 +137,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
 
         Repository repository = new(Container.GetConnectionString());
 
-        EventEntity eventToSave = Event;
+        EventEntity eventToSave = ANewEventEntity.Build();
 
         await repository.Save(eventToSave, TestContext.Current.CancellationToken);
 
@@ -198,17 +167,13 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
 
         Repository repository = new(Container.GetConnectionString());
 
-        EventEntity @event = Event;
+        EventEntity @event = ANewEventEntity.Build();
 
         await repository.Save(@event, TestContext.Current.CancellationToken);
 
-        RegistrationEntity addedRegistration = RegistrationEntity.New
-        (
-            @event.Id,
-            new RegistrationName("Jane Doe"),
-            new RegistrationPhoneNumber("+38155555555"),
-            new RegistrationEmailAddress("jane.doe@email.com")
-        );
+        RegistrationEntity addedRegistration = ANewRegistrationEntity
+            .WithEventId(@event.Id)
+            .Build();
 
         @event.Add(addedRegistration);
 

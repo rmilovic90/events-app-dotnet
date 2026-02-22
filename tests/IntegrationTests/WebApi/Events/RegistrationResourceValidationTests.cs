@@ -2,25 +2,21 @@ using System.ComponentModel.DataAnnotations;
 
 using Events.Domain.Events;
 
+using static Events.WebApi.Common.Events.Registrations.RegistrationResourceBuilder;
+
 namespace Events.WebApi.Events;
 
-public sealed class EventRegistrationsResourceValidationTests
+public sealed class RegistrationResourceValidationTests
 {
-    private static Registration ValidEventRegistration => new()
-    {
-        Name = "Jane Doe",
-        PhoneNumber = "+38155555555",
-        EmailAddress = "jane.doe@email.com"
-    };
-
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
     public void Validation_Fails_WhenNameIsMissing(string? name)
     {
-        Registration invalidEventRegistration = ValidEventRegistration;
-        invalidEventRegistration.Name = name!;
+        Registration invalidEventRegistration = ARegistrationResource
+            .WithName(name)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -40,8 +36,9 @@ public sealed class EventRegistrationsResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenNameIsTooLong()
     {
-        Registration invalidEventRegistration = ValidEventRegistration;
-        invalidEventRegistration.Name = new string('*', RegistrationName.MaxLength + 1);
+        Registration invalidEventRegistration = ARegistrationResource
+            .WithName(new string('*', RegistrationName.MaxLength + 1))
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -64,8 +61,9 @@ public sealed class EventRegistrationsResourceValidationTests
     [InlineData("  ")]
     public void Validation_Fails_WhenPhoneNumberIsMissing(string? phoneNumber)
     {
-        Registration invalidEventRegistration = ValidEventRegistration;
-        invalidEventRegistration.PhoneNumber = phoneNumber!;
+        Registration invalidEventRegistration = ARegistrationResource
+            .WithPhoneNumber(phoneNumber)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -85,8 +83,9 @@ public sealed class EventRegistrationsResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenPhoneNumberHasInvalidFormat()
     {
-        Registration invalidEventRegistration = ValidEventRegistration;
-        invalidEventRegistration.PhoneNumber = "+381aa";
+        Registration invalidEventRegistration = ARegistrationResource
+            .WithPhoneNumber("+381aa")
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -109,8 +108,9 @@ public sealed class EventRegistrationsResourceValidationTests
     [InlineData("  ")]
     public void Validation_Fails_WhenEmailAddressIsMissing(string? emailAddress)
     {
-        Registration invalidEventRegistration = ValidEventRegistration;
-        invalidEventRegistration.EmailAddress = emailAddress!;
+        Registration invalidEventRegistration = ARegistrationResource
+            .WithEmailAddress(emailAddress)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -130,8 +130,9 @@ public sealed class EventRegistrationsResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenEmailAddressIsTooLong()
     {
-        Registration invalidEventRegistration = ValidEventRegistration;
-        invalidEventRegistration.EmailAddress = $"{new string('*', RegistrationEmailAddress.MaxLength + 1)}@email.com";
+        Registration invalidEventRegistration = ARegistrationResource
+            .WithEmailAddress($"{new string('*', RegistrationEmailAddress.MaxLength + 1)}@email.com")
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -151,8 +152,9 @@ public sealed class EventRegistrationsResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenEmailAddressHasInvalidFormat()
     {
-        Registration invalidEventRegistration = ValidEventRegistration;
-        invalidEventRegistration.EmailAddress = "email";
+        Registration invalidEventRegistration = ARegistrationResource
+            .WithEmailAddress("email")
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -172,7 +174,7 @@ public sealed class EventRegistrationsResourceValidationTests
     [Fact]
     public void Validation_Succeeds_WhenEventResourceIsValid()
     {
-        Registration validEventRegistration = ValidEventRegistration;
+        Registration validEventRegistration = ARegistrationResource.Build();
 
         List<ValidationResult> validationResults = [];
 

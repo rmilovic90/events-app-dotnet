@@ -161,33 +161,28 @@ internal sealed class Repository : IEventsRepository
         }
     }
 
-    private static EventEntity GetEvent(NpgsqlDataReader reader)
-    {
-        StartTime startTime = StartTime.Of
-        (
-            new DateTimeOffset
-            (
-                reader.GetDateTime(reader.GetOrdinal("start_time")),
-                reader.GetTimeSpan(reader.GetOrdinal("start_time_offset"))
-            )
-        );
-
-        return EventEntity.Of
+    private static EventEntity GetEvent(NpgsqlDataReader reader) =>
+        EventEntity.Of
         (
             new Id(reader.GetGuid(reader.GetOrdinal("id")).ToString()),
             new Name(reader.GetString(reader.GetOrdinal("name"))),
             new Description(reader.GetString(reader.GetOrdinal("description"))),
             new Location(reader.GetString(reader.GetOrdinal("location"))),
-            startTime,
+            StartTime.Of
+            (
+                new DateTimeOffset
+                (
+                    reader.GetDateTime(reader.GetOrdinal("start_time")),
+                    reader.GetTimeSpan(reader.GetOrdinal("start_time_offset"))
+                )
+            ),
             EndTime.Of
             (
                 new DateTimeOffset
                 (
                     reader.GetDateTime(reader.GetOrdinal("end_time")),
                     reader.GetTimeSpan(reader.GetOrdinal("end_time_offset"))
-                ),
-                startTime
+                )
             )
         );
-    }
 }

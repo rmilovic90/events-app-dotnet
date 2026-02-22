@@ -2,30 +2,21 @@ using System.ComponentModel.DataAnnotations;
 
 using Events.Domain.Events;
 
+using static Events.WebApi.Common.Events.EventResourceBuilder;
+
 namespace Events.WebApi.Events;
 
 public sealed class EventResourceValidationTests
 {
-    private static readonly DateTime UtcTomorrow = DateTime.UtcNow.AddDays(1);
-    private static readonly TimeZoneInfo CentralEuropeanTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-
-    private static Event ValidEvent => new()
-    {
-        Name = "Test",
-        Description = "The test event.",
-        Location = "Novi Sad, Serbia",
-        StartTime = new DateTimeOffset(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 14, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)),
-        EndTime = new DateTimeOffset(UtcTomorrow.Year, UtcTomorrow.Month, UtcTomorrow.Day, 15, 0, 0, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow))
-    };
-
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
     public void Validation_Fails_WhenNameIsMissing(string? name)
     {
-        Event invalidEvent = ValidEvent;
-        invalidEvent.Name = name!;
+        Event invalidEvent = AnEventResource
+            .WithName(name)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -45,8 +36,9 @@ public sealed class EventResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenNameIsTooLong()
     {
-        Event invalidEvent = ValidEvent;
-        invalidEvent.Name = new string('*', Name.MaxLength + 1);
+        Event invalidEvent = AnEventResource
+            .WithName(new string('*', Name.MaxLength + 1))
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -69,8 +61,9 @@ public sealed class EventResourceValidationTests
     [InlineData("  ")]
     public void Validation_Fails_WhenDescriptionIsMissing(string? description)
     {
-        Event invalidEvent = ValidEvent;
-        invalidEvent.Description = description!;
+        Event invalidEvent = AnEventResource
+            .WithDescription(description)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -90,8 +83,9 @@ public sealed class EventResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenDescriptionIsTooLong()
     {
-        Event invalidEvent = ValidEvent;
-        invalidEvent.Description = new string('*', Description.MaxLength + 1);
+        Event invalidEvent = AnEventResource
+            .WithDescription(new string('*', Description.MaxLength + 1))
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -114,8 +108,9 @@ public sealed class EventResourceValidationTests
     [InlineData("  ")]
     public void Validation_Fails_WhenLocationIsMissing(string? location)
     {
-        Event invalidEvent = ValidEvent;
-        invalidEvent.Location = location!;
+        Event invalidEvent = AnEventResource
+            .WithLocation(location)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -135,8 +130,9 @@ public sealed class EventResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenLocationIsTooLong()
     {
-        Event invalidEvent = ValidEvent;
-        invalidEvent.Location = new string('*', Location.MaxLength + 1);
+        Event invalidEvent = AnEventResource
+            .WithLocation(new string('*', Location.MaxLength + 1))
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -156,9 +152,9 @@ public sealed class EventResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenStartTimeIsNotInTheFuture()
     {
-        DateTime utcNow = DateTime.UtcNow;
-        Event invalidEvent = ValidEvent;
-        invalidEvent.StartTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)).AddHours(-1);
+        Event invalidEvent = AnEventResource
+            .WithStartTime(DateTimeOffset.UtcNow.AddDays(-1))
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -178,10 +174,10 @@ public sealed class EventResourceValidationTests
     [Fact]
     public void Validation_Fails_WhenEndTimeIsNotAfterStartTime()
     {
-        DateTime utcNow = DateTime.UtcNow;
-        Event invalidEvent = ValidEvent;
-        invalidEvent.StartTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow)).AddDays(1);
-        invalidEvent.EndTime = new DateTimeOffset(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, utcNow.Minute, utcNow.Second, CentralEuropeanTimeZone.GetUtcOffset(UtcTomorrow));
+        Event invalidEvent = AnEventResource
+            .WithStartTime(DateTimeOffset.UtcNow.AddDays(1))
+            .WithEndTime(DateTimeOffset.UtcNow)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -201,7 +197,7 @@ public sealed class EventResourceValidationTests
     [Fact]
     public void Validation_Succeeds_WhenEventResourceIsValid()
     {
-        Event validEvent = ValidEvent;
+        Event validEvent = AnEventResource.Build();
 
         List<ValidationResult> validationResults = [];
 
