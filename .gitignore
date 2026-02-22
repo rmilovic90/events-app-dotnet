@@ -410,6 +410,9 @@ FodyWeavers.xsd
 ## Visual studio for Mac
 ##
 
+# Visual Studio Code
+.vscode/
+
 
 # globs
 Makefile.in
