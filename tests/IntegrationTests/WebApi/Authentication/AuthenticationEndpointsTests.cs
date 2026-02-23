@@ -5,24 +5,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 
+using static Events.WebApi.Authentication.TokenRequestResourceBuilder;
+
 namespace Events.WebApi.Authentication;
 
 public sealed class AuthenticationEndpointsTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
-    private static readonly TokenRequest ValidTokenRequest = new()
-    {
-        Username = "user",
-        Password = "password"
-    };
+    private static readonly TokenRequest InvalidTokenRequest = new();
+    private static readonly TokenRequest ValidTokenRequest = ATokenRequestResource.Build();
 
     private readonly HttpClient _httpClient = factory.CreateClient();
 
     [Fact]
     public async Task PostToken_ReturnsResponseWithBadRequestStatusCode_WhenRequestResourceIsInvalid()
     {
-        TokenRequest invalidTokenRequest = new();
-
-        HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.GenerateTokenRoute, invalidTokenRequest, TestContext.Current.CancellationToken);
+        HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.GenerateTokenRoute, InvalidTokenRequest, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -30,9 +27,7 @@ public sealed class AuthenticationEndpointsTests(WebApplicationFactory<Program> 
     [Fact]
     public async Task PostToken_ReturnsValidationErrorsInResponseBody_WhenRequestResourceIsInvalid()
     {
-        TokenRequest invalidTokenRequest = new();
-
-        HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.GenerateTokenRoute, invalidTokenRequest, TestContext.Current.CancellationToken);
+        HttpResponseMessage response = await _httpClient.PostAsJsonAsync(Endpoints.GenerateTokenRoute, InvalidTokenRequest, TestContext.Current.CancellationToken);
 
         ValidationProblemDetails? responseBody = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(TestContext.Current.CancellationToken);
 

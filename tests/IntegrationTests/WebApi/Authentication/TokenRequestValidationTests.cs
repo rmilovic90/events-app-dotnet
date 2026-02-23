@@ -1,23 +1,20 @@
 using System.ComponentModel.DataAnnotations;
 
+using static Events.WebApi.Authentication.TokenRequestResourceBuilder;
+
 namespace Events.WebApi.Authentication;
 
 public sealed class TokenRequestValidationTests
 {
-    private static TokenRequest ValidTokenRequest => new()
-    {
-        Username = "user",
-        Password = "password"
-    };
-
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyTokenRequestUsername)]
+    [InlineData(TokenRequestUsernameWithWhitespacesOnly)]
     public void Validation_Fails_WhenUsernameIsMissing(string? username)
     {
-        TokenRequest invalidTokenRequest = ValidTokenRequest;
-        invalidTokenRequest.Username = username!;
+        TokenRequest invalidTokenRequest = ATokenRequestResource
+            .WithUsername(username)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -36,12 +33,13 @@ public sealed class TokenRequestValidationTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
+    [InlineData(AnEmptyTokenRequestPassword)]
+    [InlineData(TokenRequestPasswordWithWhitespacesOnly)]
     public void Validation_Fails_WhenPasswordIsMissing(string? password)
     {
-        TokenRequest invalidTokenRequest = ValidTokenRequest;
-        invalidTokenRequest.Password = password!;
+        TokenRequest invalidTokenRequest = ATokenRequestResource
+            .WithPassword(password)
+            .Build();
 
         List<ValidationResult> validationResults = [];
 
@@ -61,7 +59,7 @@ public sealed class TokenRequestValidationTests
     [Fact]
     public void Validation_Succeeds_WhenTokenRequestResourceIsValid()
     {
-        TokenRequest validTokenRequest = ValidTokenRequest;
+        TokenRequest validTokenRequest = ATokenRequestResource.Build();
 
         List<ValidationResult> validationResults = [];
 
