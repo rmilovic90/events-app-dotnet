@@ -1,7 +1,4 @@
-using Events.Domain.Events.Registrations;
-
 using static Events.Domain.Events.EventEntityBuilder;
-using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 
 namespace Events.Domain.Events;
 
@@ -234,29 +231,6 @@ public sealed class EventTests
             () => Assert.Equal(AnEventLocation, @event.Location),
             () => Assert.Equal(TomorrowStartTime, @event.StartTime),
             () => Assert.Equal(FollowingDayEndTime, @event.EndTime)
-        );
-    }
-
-    [Fact]
-    public void DoesNotAllowAddingOfPendingRegistration_WhenRegistrationIsNull()
-    {
-        Event @event = ANewEventEntity.Build();
-
-        Assert.Throws<ArgumentNullException>(() => @event.Add(null!));
-    }
-
-    [Fact]
-    public void AllowsAddingOfPendingRegistration_WhenRegistrationIsPresent()
-    {
-        Event @event = ANewEventEntity.Build();
-        Registration registration = ANewRegistrationEntity.Build();
-
-        @event.Add(registration);
-
-        Assert.Equivalent
-        (
-            new[] { registration },
-            @event.PendingRegistrations
         );
     }
 }

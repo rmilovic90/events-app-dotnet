@@ -6,14 +6,10 @@ using Npgsql;
 using NpgsqlTypes;
 
 using EventEntity = Events.Domain.Events.Event;
-using EventRegistrationEntity = Events.Domain.Events.Registrations.Registration;
-using RegistrationEmailAddress = Events.Domain.Events.Registrations.EmailAddress;
-using RegistrationName = Events.Domain.Events.Registrations.Name;
-using RegistrationPhoneNumber = Events.Domain.Events.Registrations.PhoneNumber;
 
 namespace Events.WebApi.Events;
 
-internal sealed class Repository : IEventsRepository
+internal sealed class Repository : IRepository
 {
     private readonly string _connectionString;
 
@@ -63,105 +59,36 @@ internal sealed class Repository : IEventsRepository
         return GetEvent(reader);
     }
 
-    public async Task<IReadOnlyList<EventRegistrationEntity>> GetAllRegistrations(Id eventId, CancellationToken cancellationToken)
-    {
-        if (!Guid.TryParse(eventId.ToString(), out Guid idValue)) return [];
-
-        using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(_connectionString);
-
-        using NpgsqlCommand command = dataSource.CreateCommand();
-        command.CommandText = "SELECT * FROM registrations WHERE event_id = @eventId";
-        command.Parameters.AddWithValue("eventId", NpgsqlDbType.Uuid, idValue);
-
-        NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
-
-        if (!reader.HasRows) return [];
-
-        List<EventRegistrationEntity> eventRegistrations = [];
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            eventRegistrations.Add
-            (
-                EventRegistrationEntity.Of
-                (
-                    new Id(reader.GetGuid(reader.GetOrdinal("id")).ToString()),
-                    new Id(reader.GetGuid(reader.GetOrdinal("event_id")).ToString()),
-                    new RegistrationName(reader.GetString(reader.GetOrdinal("name"))),
-                    new RegistrationPhoneNumber(reader.GetString(reader.GetOrdinal("phone_number"))),
-                    new RegistrationEmailAddress(reader.GetString(reader.GetOrdinal("email_address")))
-                )
-            );
-        }
-
-        return eventRegistrations;
-    }
-
     public async Task Save(EventEntity @event, CancellationToken cancellationToken)
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(_connectionString);
 
-        await using NpgsqlConnection connection = await dataSource.OpenConnectionAsync(cancellationToken);
-        await using NpgsqlTransaction transaction = await connection.BeginTransactionAsync(cancellationToken);
+        using NpgsqlCommand saveOrUpdateEventCommand = dataSource.CreateCommand
+        (
+            """
+            INSERT INTO events (id, name, description, location, start_time, start_time_offset, end_time, end_time_offset)
+            VALUES (@id, @name, @description, @location, @start_time, @start_time_offset, @end_time, @end_time_offset)
+            ON CONFLICT (id)
+            DO UPDATE SET
+                name = EXCLUDED.name,
+                description = EXCLUDED.description,
+                location = EXCLUDED.location,
+                start_time = EXCLUDED.start_time,
+                start_time_offset = EXCLUDED.start_time_offset,
+                end_time = EXCLUDED.end_time,
+                end_time_offset = EXCLUDED.end_time_offset
+            """
+        );
+        saveOrUpdateEventCommand.Parameters.AddWithValue("id", NpgsqlDbType.Uuid, Guid.Parse(@event.Id.ToString()));
+        saveOrUpdateEventCommand.Parameters.AddWithValue("name", NpgsqlDbType.Varchar, @event.Name.ToString());
+        saveOrUpdateEventCommand.Parameters.AddWithValue("description", NpgsqlDbType.Varchar, @event.Description.ToString());
+        saveOrUpdateEventCommand.Parameters.AddWithValue("location", NpgsqlDbType.Varchar, @event.Location.ToString());
+        saveOrUpdateEventCommand.Parameters.AddWithValue("start_time", NpgsqlDbType.Timestamp, @event.StartTime.Value.DateTime);
+        saveOrUpdateEventCommand.Parameters.AddWithValue("start_time_offset", NpgsqlDbType.Interval, @event.StartTime.Value.Offset);
+        saveOrUpdateEventCommand.Parameters.AddWithValue("end_time", NpgsqlDbType.Timestamp, @event.EndTime.Value.DateTime);
+        saveOrUpdateEventCommand.Parameters.AddWithValue("end_time_offset", NpgsqlDbType.Interval, @event.EndTime.Value.Offset);
 
-        try
-        {
-            using NpgsqlCommand saveOrUpdateEventCommand = new
-            (
-                """
-                INSERT INTO events (id, name, description, location, start_time, start_time_offset, end_time, end_time_offset)
-                VALUES (@id, @name, @description, @location, @start_time, @start_time_offset, @end_time, @end_time_offset)
-                ON CONFLICT (id)
-                DO UPDATE SET
-                    name = EXCLUDED.name,
-                    description = EXCLUDED.description,
-                    location = EXCLUDED.location,
-                    start_time = EXCLUDED.start_time,
-                    start_time_offset = EXCLUDED.start_time_offset,
-                    end_time = EXCLUDED.end_time,
-                    end_time_offset = EXCLUDED.end_time_offset
-                """,
-                connection,
-                transaction
-            );
-            saveOrUpdateEventCommand.Parameters.AddWithValue("id", NpgsqlDbType.Uuid, Guid.Parse(@event.Id.ToString()));
-            saveOrUpdateEventCommand.Parameters.AddWithValue("name", NpgsqlDbType.Varchar, @event.Name.ToString());
-            saveOrUpdateEventCommand.Parameters.AddWithValue("description", NpgsqlDbType.Varchar, @event.Description.ToString());
-            saveOrUpdateEventCommand.Parameters.AddWithValue("location", NpgsqlDbType.Varchar, @event.Location.ToString());
-            saveOrUpdateEventCommand.Parameters.AddWithValue("start_time", NpgsqlDbType.Timestamp, @event.StartTime.Value.DateTime);
-            saveOrUpdateEventCommand.Parameters.AddWithValue("start_time_offset", NpgsqlDbType.Interval, @event.StartTime.Value.Offset);
-            saveOrUpdateEventCommand.Parameters.AddWithValue("end_time", NpgsqlDbType.Timestamp, @event.EndTime.Value.DateTime);
-            saveOrUpdateEventCommand.Parameters.AddWithValue("end_time_offset", NpgsqlDbType.Interval, @event.EndTime.Value.Offset);
-
-            await saveOrUpdateEventCommand.ExecuteNonQueryAsync(cancellationToken);
-
-            foreach (EventRegistrationEntity registration in @event.PendingRegistrations)
-            {
-                using NpgsqlCommand addEventRegistrationCommand = new
-                (
-                    """
-                    INSERT INTO registrations (id, event_id, name, phone_number, email_address)
-                    VALUES (@id, @event_id, @name, @phone_number, @email_address)
-                    """,
-                    connection,
-                    transaction
-                );
-                addEventRegistrationCommand.Parameters.AddWithValue("id", NpgsqlDbType.Uuid, Guid.Parse(registration.Id.ToString()));
-                addEventRegistrationCommand.Parameters.AddWithValue("event_id", NpgsqlDbType.Uuid, Guid.Parse(registration.EventId.ToString()));
-                addEventRegistrationCommand.Parameters.AddWithValue("name", NpgsqlDbType.Varchar, registration.Name.ToString());
-                addEventRegistrationCommand.Parameters.AddWithValue("phone_number", NpgsqlDbType.Varchar, registration.PhoneNumber.ToString());
-                addEventRegistrationCommand.Parameters.AddWithValue("email_address", NpgsqlDbType.Varchar, registration.EmailAddress.ToString());
-
-                await addEventRegistrationCommand.ExecuteNonQueryAsync(cancellationToken);
-            }
-
-            await transaction.CommitAsync(cancellationToken);
-        }
-        catch (NpgsqlException)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-
-            throw;
-        }
+        await saveOrUpdateEventCommand.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private static EventEntity GetEvent(NpgsqlDataReader reader) =>

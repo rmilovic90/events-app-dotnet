@@ -1,12 +1,13 @@
 using System.Net.Mime;
 
 using Events.Domain;
-using Events.Domain.Events;
 
 using Microsoft.AspNetCore.Mvc;
 
 using EventEntity = Events.Domain.Events.Event;
 using EventsEndpoints = Events.WebApi.Events.Endpoints;
+using IEventsRepository = Events.Domain.Events.IRepository;
+using IRegistrationsRepository = Events.Domain.Events.Registrations.IRepository;
 using RegistrationEntity = Events.Domain.Events.Registrations.Registration;
 using RegistrationResource = Events.WebApi.Events.Registrations.Registration;
 
@@ -20,11 +21,12 @@ internal static class Endpoints
     private static async Task<IResult> GetAllEventRegistrations
     (
         [FromRoute(Name = "id")] string eventId,
-        IEventsRepository repository,
+        IEventsRepository eventsRepository,
+        IRegistrationsRepository registrationsRepository,
         CancellationToken cancellationToken
     )
     {
-        EventEntity? @event = await repository.Get(new Id(eventId), cancellationToken);
+        EventEntity? @event = await eventsRepository.Get(new Id(eventId), cancellationToken);
 
         if (@event is null)
             return TypedResults.Problem
@@ -33,7 +35,7 @@ internal static class Endpoints
                 statusCode: StatusCodes.Status404NotFound
             );
 
-        IReadOnlyList<RegistrationEntity> registrations = await repository.GetAllRegistrations(new Id(eventId), cancellationToken);
+        IReadOnlyList<RegistrationEntity> registrations = await registrationsRepository.GetAll(new Id(eventId), cancellationToken);
 
         return TypedResults.Ok(registrations.Select(RegistrationResource.FromEntity));
     }
@@ -42,11 +44,12 @@ internal static class Endpoints
     (
         [FromRoute(Name = "id")] string eventId,
         [FromBody] RegistrationResource registration,
-        IEventsRepository repository,
+        IEventsRepository eventsRepository,
+        IRegistrationsRepository registrationsRepository,
         CancellationToken cancellationToken
     )
     {
-        EventEntity? @event = await repository.Get(new Id(eventId), cancellationToken);
+        EventEntity? @event = await eventsRepository.Get(new Id(eventId), cancellationToken);
 
         if (@event is null)
             return TypedResults.Problem
@@ -56,9 +59,8 @@ internal static class Endpoints
             );
 
         RegistrationEntity registrationEntity = registration.AsEntity(eventId);
-        @event.Add(registrationEntity);
 
-        await repository.Save(@event, cancellationToken);
+        await registrationsRepository.Save(registrationEntity, cancellationToken);
 
         registration.Id = registrationEntity.Id.ToString();
         registration.EventId = registrationEntity.EventId.ToString();

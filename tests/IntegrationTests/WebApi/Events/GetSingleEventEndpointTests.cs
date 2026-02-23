@@ -21,12 +21,12 @@ public sealed class GetSingleEventEndpointTests : IClassFixture<WebApplicationFa
 {
     private static readonly string RequestUrl = Endpoints.GetSingleRoute.Replace("{id}", AnEventIdValue);
 
-    private readonly IEventsRepository _repositoryMock;
+    private readonly IRepository _repositoryMock;
     private readonly HttpClient _httpClient;
 
     public GetSingleEventEndpointTests(WebApplicationFactory<Program> factory)
     {
-        _repositoryMock = Substitute.For<IEventsRepository>();
+        _repositoryMock = Substitute.For<IRepository>();
 
         _httpClient = factory.WithWebHostBuilder
         (

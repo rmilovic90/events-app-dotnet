@@ -23,12 +23,12 @@ public sealed class CreateEventEndpointTests : IClassFixture<WebApplicationFacto
     private static readonly EventResource InvalidEvent = new();
     private static readonly EventResource ValidEvent = AnEventResource.Build();
 
-    private readonly IEventsRepository _repositoryMock;
+    private readonly IRepository _repositoryMock;
     private readonly HttpClient _httpClient;
 
     public CreateEventEndpointTests(WebApplicationFactory<Program> factory)
     {
-        _repositoryMock = Substitute.For<IEventsRepository>();
+        _repositoryMock = Substitute.For<IRepository>();
 
         _httpClient = factory.WithWebHostBuilder
         (

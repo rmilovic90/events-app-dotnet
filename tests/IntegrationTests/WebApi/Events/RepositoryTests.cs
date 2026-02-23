@@ -6,10 +6,8 @@ using Testcontainers.PostgreSql;
 using Testcontainers.Xunit;
 
 using static Events.Domain.Events.EventEntityBuilder;
-using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
-using RegistrationEntity = Events.Domain.Events.Registrations.Registration;
 
 namespace Events.WebApi.Events;
 
@@ -89,46 +87,6 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     }
 
     [Fact]
-    public async Task ReturnsAllEventRegistrations()
-    {
-        await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
-
-        await SetupDatabase(dataSource);
-
-        EventEntity @event = ANewEventEntity.Build();
-
-        Repository repository = new(Container.GetConnectionString());
-
-        await repository.Save(@event, TestContext.Current.CancellationToken);
-
-        RegistrationEntity firstEventRegistration = ANewRegistrationEntity
-            .WithEventId(@event.Id)
-            .WithName("Jane Doe")
-            .WithPhoneNumber("+38155555555")
-            .WithEmailAddress("jane.doe@email.com")
-            .Build();
-        RegistrationEntity secondEventRegistration = ANewRegistrationEntity
-            .WithEventId(@event.Id)
-            .WithName("John Doe")
-            .WithPhoneNumber("+38155666666")
-            .WithEmailAddress("john.doe@email.com")
-            .Build();
-
-        @event.Add(firstEventRegistration);
-        @event.Add(secondEventRegistration);
-
-        await repository.Save(@event, TestContext.Current.CancellationToken);
-
-        IReadOnlyList<RegistrationEntity> eventRegistrations = await repository.GetAllRegistrations(@event.Id, TestContext.Current.CancellationToken);
-
-        Assert.Equivalent
-        (
-            new[] { firstEventRegistration, secondEventRegistration },
-            eventRegistrations
-        );
-    }
-
-    [Fact]
     public async Task SavesNewEvent()
     {
         await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
@@ -158,41 +116,6 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
         );
     }
 
-    [Fact]
-    public async Task SavesRegistrationWithExistingEvent()
-    {
-        await using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(Container.GetConnectionString());
-
-        await SetupDatabase(dataSource);
-
-        Repository repository = new(Container.GetConnectionString());
-
-        EventEntity @event = ANewEventEntity.Build();
-
-        await repository.Save(@event, TestContext.Current.CancellationToken);
-
-        RegistrationEntity addedRegistration = ANewRegistrationEntity
-            .WithEventId(@event.Id)
-            .Build();
-
-        @event.Add(addedRegistration);
-
-        await repository.Save(@event, TestContext.Current.CancellationToken);
-
-        await using NpgsqlDataReader reader = await GetEventRegistrations(dataSource, @event);
-        await reader.ReadAsync(TestContext.Current.CancellationToken);
-
-        Assert.True(reader.HasRows);
-        Assert.Multiple
-        (
-            () => Assert.Equal(addedRegistration.Id.ToString(), reader.GetGuid(reader.GetOrdinal("id")).ToString()),
-            () => Assert.Equal(addedRegistration.EventId.ToString(), reader.GetGuid(reader.GetOrdinal("event_id")).ToString()),
-            () => Assert.Equal(addedRegistration.Name.ToString(), reader.GetString(reader.GetOrdinal("name"))),
-            () => Assert.Equal(addedRegistration.PhoneNumber.ToString(), reader.GetString(reader.GetOrdinal("phone_number"))),
-            () => Assert.Equal(addedRegistration.EmailAddress.ToString(), reader.GetString(reader.GetOrdinal("email_address")))
-        );
-    }
-
     protected override PostgreSqlBuilder Configure() => new("postgres:latest");
 
     private static async Task SetupDatabase(NpgsqlDataSource dataSource)
@@ -209,13 +132,5 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
         getEventByIdQuery.CommandText = $"SELECT * FROM events WHERE id = '{@event.Id}'";
 
         return await getEventByIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
-    }
-
-    private static async Task<NpgsqlDataReader> GetEventRegistrations(NpgsqlDataSource dataSource, EventEntity @event)
-    {
-        await using NpgsqlCommand getRegistrationsByEventIdQuery = dataSource.CreateCommand();
-        getRegistrationsByEventIdQuery.CommandText = $"SELECT * FROM registrations WHERE event_id = '{@event.Id}'";
-
-        return await getRegistrationsByEventIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
     }
 }

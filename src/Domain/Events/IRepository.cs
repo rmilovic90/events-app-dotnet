@@ -1,11 +1,8 @@
-using Events.Domain.Events.Registrations;
-
 namespace Events.Domain.Events;
 
-public interface IEventsRepository
+public interface IRepository
 {
     Task<IReadOnlyList<Event>> GetAll(CancellationToken cancellationToken);
     Task<Event?> Get(Id id, CancellationToken cancellationToken);
-    Task<IReadOnlyList<Registration>> GetAllRegistrations(Id eventId, CancellationToken cancellationToken);
     Task Save(Event @event, CancellationToken cancellationToken);
 }

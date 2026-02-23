@@ -20,7 +20,7 @@ internal static class Endpoints
 
     private static async Task<IResult> GetAll
     (
-        IEventsRepository repository,
+        IRepository repository,
         CancellationToken cancellationToken
     )
     {
@@ -32,7 +32,7 @@ internal static class Endpoints
     private static async Task<IResult> GetSingle
     (
         [FromRoute] string id,
-        IEventsRepository repository,
+        IRepository repository,
         CancellationToken cancellationToken
     )
     {
@@ -50,7 +50,7 @@ internal static class Endpoints
     private static async Task<IResult> Create
     (
         EventResource @event,
-        IEventsRepository repository,
+        IRepository repository,
         CancellationToken cancellationToken
     )
     {

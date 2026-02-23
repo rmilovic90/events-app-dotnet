@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 
 using Events.Domain;
-using Events.Domain.Events;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -15,6 +14,8 @@ using static Events.Domain.Events.EventEntityBuilder;
 using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
+using IEventsRepository = Events.Domain.Events.IRepository;
+using IRegistrationsRepository = Events.Domain.Events.Registrations.IRepository;
 using RegistrationEntity = Events.Domain.Events.Registrations.Registration;
 using RegistrationResource = Events.WebApi.Events.Registrations.Registration;
 
@@ -24,12 +25,14 @@ public sealed class GetAllEventRegistrationsEndpointTests : IClassFixture<WebApp
 {
     private static readonly string RequestUrl = Endpoints.AddEventRegistrationRoute.Replace("{id}", AnEventIdValue);
 
-    private readonly IEventsRepository _repositoryMock;
+    private readonly IEventsRepository _eventsRepositoryMock;
+    private readonly IRegistrationsRepository _registrationsRepositoryMock;
     private readonly HttpClient _httpClient;
 
     public GetAllEventRegistrationsEndpointTests(WebApplicationFactory<Program> factory)
     {
-        _repositoryMock = Substitute.For<IEventsRepository>();
+        _eventsRepositoryMock = Substitute.For<IEventsRepository>();
+        _registrationsRepositoryMock = Substitute.For<IRegistrationsRepository>();
 
         _httpClient = factory.WithWebHostBuilder
         (
@@ -37,7 +40,8 @@ public sealed class GetAllEventRegistrationsEndpointTests : IClassFixture<WebApp
             (
                 services =>
                 {
-                    services.AddTransient(_ => _repositoryMock);
+                    services.AddTransient(_ => _eventsRepositoryMock);
+                    services.AddTransient(_ => _registrationsRepositoryMock);
                     services.AddAuthentication(TestAuthHandler.TestAuthenticationScheme)
                         .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>
                         (
@@ -53,7 +57,7 @@ public sealed class GetAllEventRegistrationsEndpointTests : IClassFixture<WebApp
     [Fact]
     public async Task Get_ReturnsResponseWithNotFoundStatusCode_WhenEventWithIdFromUrlIsNotFound()
     {
-        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _eventsRepositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns((EventEntity?)null);
 
         HttpResponseMessage response = await _httpClient.GetAsync(RequestUrl, TestContext.Current.CancellationToken);
@@ -64,7 +68,7 @@ public sealed class GetAllEventRegistrationsEndpointTests : IClassFixture<WebApp
     [Fact]
     public async Task Get_ReturnsResponseWithOkStatusCode_WhenEventWithIdFromUrlIsFound()
     {
-        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _eventsRepositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns
             (
                 ANewEventEntity
@@ -80,7 +84,7 @@ public sealed class GetAllEventRegistrationsEndpointTests : IClassFixture<WebApp
     [Fact]
     public async Task Get_ReturnsResponseWithEventRegistrationsListBody_WhenEventWithIdFromUrlIsFound()
     {
-        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _eventsRepositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns
             (
                 ANewEventEntity
@@ -101,7 +105,7 @@ public sealed class GetAllEventRegistrationsEndpointTests : IClassFixture<WebApp
             .WithEmailAddress("john.doe@email.com")
             .Build();
 
-        _repositoryMock.GetAllRegistrations(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _registrationsRepositoryMock.GetAll(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns([firstEventRegistration, secondEventRegistration]);
 
         HttpResponseMessage response = await _httpClient.GetAsync(RequestUrl, TestContext.Current.CancellationToken);

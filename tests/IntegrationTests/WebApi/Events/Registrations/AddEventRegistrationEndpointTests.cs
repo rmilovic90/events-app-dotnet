@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 
 using Events.Domain;
-using Events.Domain.Events;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +15,8 @@ using static Events.Domain.Events.EventEntityBuilder;
 using static Events.WebApi.Events.Registrations.RegistrationResourceBuilder;
 
 using EventEntity = Events.Domain.Events.Event;
+using IEventsRepository = Events.Domain.Events.IRepository;
+using IRegistrationsRepository = Events.Domain.Events.Registrations.IRepository;
 using RegistrationEmailAddress = Events.Domain.Events.Registrations.EmailAddress;
 using RegistrationEntity = Events.Domain.Events.Registrations.Registration;
 using RegistrationName = Events.Domain.Events.Registrations.Name;
@@ -31,22 +32,30 @@ public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplica
     private static readonly RegistrationResource InvalidRegistrationResource = new();
     private static readonly RegistrationResource ValidRegistrationResource = ARegistrationResource.Build();
 
-    private readonly IEventsRepository _repositoryMock;
+    private readonly IEventsRepository _eventsRepositoryMock;
+    private readonly IRegistrationsRepository _registrationsRepositoryMock;
     private readonly HttpClient _httpClient;
 
     public AddEventRegistrationEndpointTests(WebApplicationFactory<Program> factory)
     {
-        _repositoryMock = Substitute.For<IEventsRepository>();
+        _eventsRepositoryMock = Substitute.For<IEventsRepository>();
+        _registrationsRepositoryMock = Substitute.For<IRegistrationsRepository>();
 
         _httpClient = factory.WithWebHostBuilder
         (
-            builder => builder.ConfigureTestServices(services => services.AddTransient(_ => _repositoryMock))
+            builder => builder.ConfigureTestServices
+            (
+                services =>
+                {
+                    services.AddTransient(_ => _eventsRepositoryMock);
+                    services.AddTransient(_ => _registrationsRepositoryMock);
+                })
         )
         .CreateClient();
     }
 
     [Fact]
-    public async Task PostEventRegistration_ReturnsResponseWithBadRequestStatusCode_WhenResourceIsInvalid()
+    public async Task PostRegistration_ReturnsResponseWithBadRequestStatusCode_WhenResourceIsInvalid()
     {
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(RequestUrl, InvalidRegistrationResource, TestContext.Current.CancellationToken);
 
@@ -54,7 +63,7 @@ public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplica
     }
 
     [Fact]
-    public async Task PostEventRegistration_ReturnsValidationErrorsInResponseBody_WhenResourceIsInvalid()
+    public async Task PostRegistration_ReturnsValidationErrorsInResponseBody_WhenResourceIsInvalid()
     {
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(RequestUrl, InvalidRegistrationResource, TestContext.Current.CancellationToken);
 
@@ -70,9 +79,9 @@ public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplica
     }
 
     [Fact]
-    public async Task PostEventRegistration_ReturnsResponseWithNotFoundStatusCode_WhenEventWithIdFromUrlIsNotFound()
+    public async Task PostRegistration_ReturnsResponseWithNotFoundStatusCode_WhenEventWithIdFromUrlIsNotFound()
     {
-        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _eventsRepositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns((EventEntity?)null);
 
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(RequestUrl, ValidRegistrationResource, TestContext.Current.CancellationToken);
@@ -81,9 +90,9 @@ public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplica
     }
 
     [Fact]
-    public async Task PostEventRegistration_ReturnsErrorInResponseBody_WhenEventWithIdFromUrlIsNotFound()
+    public async Task PostRegistration_ReturnsErrorInResponseBody_WhenEventWithIdFromUrlIsNotFound()
     {
-        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _eventsRepositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns((EventEntity?)null);
 
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(RequestUrl, ValidRegistrationResource, TestContext.Current.CancellationToken);
@@ -99,9 +108,9 @@ public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplica
     }
 
     [Fact]
-    public async Task PostEventRegistration_SavesRegistration_WhenResourceIsValid()
+    public async Task PostRegistration_SavesRegistration_WhenResourceIsValid()
     {
-        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _eventsRepositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns
             (
                 ANewEventEntity
@@ -109,16 +118,16 @@ public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplica
                     .Build()
             );
 
-        EventEntity? savedEvent = null;
-        await _repositoryMock.Save
+        RegistrationEntity? savedRegistration = null;
+        await _registrationsRepositoryMock.Save
         (
-            Arg.Do<EventEntity>(@event => savedEvent = @event),
+            Arg.Do<RegistrationEntity>(@registration => savedRegistration = registration),
             Arg.Any<CancellationToken>()
         );
 
         HttpResponseMessage response = await _httpClient.PostAsJsonAsync(RequestUrl, ValidRegistrationResource, TestContext.Current.CancellationToken);
 
-        RegistrationEntity savedRegistration = Assert.Single(savedEvent?.PendingRegistrations ?? []);
+        Assert.NotNull(savedRegistration);
         Assert.Multiple
         (
             () => Assert.NotNull(savedRegistration.Id),
@@ -130,9 +139,9 @@ public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplica
     }
 
     [Fact]
-    public async Task PostEventRegistration_ReturnsResponseWithCreatedStatusCode_WhenResourceIsValid()
+    public async Task PostRegistration_ReturnsResponseWithCreatedStatusCode_WhenResourceIsValid()
     {
-        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _eventsRepositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns
             (
                 ANewEventEntity
@@ -148,7 +157,7 @@ public sealed class AddEventRegistrationEndpointTests : IClassFixture<WebApplica
     [Fact]
     public async Task PostEventRegistration_ReturnsResponseWithRegistrationBody_WhenResourceIsValid()
     {
-        _repositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
+        _eventsRepositoryMock.Get(new Id(AnEventIdValue), Arg.Any<CancellationToken>())
             .Returns
             (
                 ANewEventEntity
