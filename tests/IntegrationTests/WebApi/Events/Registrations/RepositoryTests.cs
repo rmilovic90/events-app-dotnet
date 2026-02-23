@@ -5,6 +5,7 @@ using Testcontainers.Xunit;
 
 using static Events.Domain.Events.EventEntityBuilder;
 using static Events.Domain.Events.Registrations.RegistrationEntityBuilder;
+using static Events.WebApi.Events.Registrations.Repository;
 
 using EventEntity = Events.Domain.Events.Event;
 using EventsRepository = Events.WebApi.Events.Repository;
@@ -82,11 +83,11 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
         Assert.True(reader.HasRows);
         Assert.Multiple
         (
-            () => Assert.Equal(addedRegistration.Id.ToString(), reader.GetGuid(reader.GetOrdinal("id")).ToString()),
-            () => Assert.Equal(addedRegistration.EventId.ToString(), reader.GetGuid(reader.GetOrdinal("event_id")).ToString()),
-            () => Assert.Equal(addedRegistration.Name.ToString(), reader.GetString(reader.GetOrdinal("name"))),
-            () => Assert.Equal(addedRegistration.PhoneNumber.ToString(), reader.GetString(reader.GetOrdinal("phone_number"))),
-            () => Assert.Equal(addedRegistration.EmailAddress.ToString(), reader.GetString(reader.GetOrdinal("email_address")))
+            () => Assert.Equal(addedRegistration.Id.ToString(), reader.GetGuid(reader.GetOrdinal(RegistrationsTableIdColumnName)).ToString()),
+            () => Assert.Equal(addedRegistration.EventId.ToString(), reader.GetGuid(reader.GetOrdinal(RegistrationsTableEventIdColumnName)).ToString()),
+            () => Assert.Equal(addedRegistration.Name.ToString(), reader.GetString(reader.GetOrdinal(RegistrationsTableNameColumnName))),
+            () => Assert.Equal(addedRegistration.PhoneNumber.ToString(), reader.GetString(reader.GetOrdinal(RegistrationsTablePhoneNumberColumnName))),
+            () => Assert.Equal(addedRegistration.EmailAddress.ToString(), reader.GetString(reader.GetOrdinal(RegistrationsTableEmailAddressColumnName)))
         );
     }
 
@@ -103,7 +104,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     private static async Task<NpgsqlDataReader> GetEventRegistrations(NpgsqlDataSource dataSource, EventEntity @event)
     {
         await using NpgsqlCommand getRegistrationsByEventIdQuery = dataSource.CreateCommand();
-        getRegistrationsByEventIdQuery.CommandText = $"SELECT * FROM registrations WHERE event_id = '{@event.Id}'";
+        getRegistrationsByEventIdQuery.CommandText = $"SELECT * FROM {RegistrationsTableName} WHERE {RegistrationsTableEventIdColumnName} = '{@event.Id}'";
 
         return await getRegistrationsByEventIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
     }

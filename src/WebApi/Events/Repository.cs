@@ -11,6 +11,16 @@ namespace Events.WebApi.Events;
 
 internal sealed class Repository : IRepository
 {
+    public const string EventsTableName = "events";
+    public const string EventsTableIdColumnName = "id";
+    public const string EventsTableNameColumnName = "name";
+    public const string EventsTableDescriptionColumnName = "description";
+    public const string EventsTableLocationColumnName = "location";
+    public const string EventsTableStartTimeColumnName = "start_time";
+    public const string EventsTableStartTimeOffsetColumnName = "start_time_offset";
+    public const string EventsTableEndTimeColumnName = "end_time";
+    public const string EventsTableEndTimeOffsetColumnName = "end_time_offset";
+
     private readonly string _connectionString;
 
     public Repository(string connectionString)
@@ -25,7 +35,7 @@ internal sealed class Repository : IRepository
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(_connectionString);
 
         using NpgsqlCommand command = dataSource.CreateCommand();
-        command.CommandText = "SELECT * FROM events";
+        command.CommandText = $"SELECT * FROM {EventsTableName}";
 
         NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
 
@@ -47,8 +57,8 @@ internal sealed class Repository : IRepository
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(_connectionString);
 
         using NpgsqlCommand command = dataSource.CreateCommand();
-        command.CommandText = "SELECT * FROM events WHERE id = @id";
-        command.Parameters.AddWithValue("id", NpgsqlDbType.Uuid, idValue);
+        command.CommandText = $"SELECT * FROM {EventsTableName} WHERE {EventsTableIdColumnName} = @{EventsTableIdColumnName}";
+        command.Parameters.AddWithValue(EventsTableIdColumnName, NpgsqlDbType.Uuid, idValue);
 
         NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
 
@@ -65,28 +75,48 @@ internal sealed class Repository : IRepository
 
         using NpgsqlCommand saveOrUpdateEventCommand = dataSource.CreateCommand
         (
-            """
-            INSERT INTO events (id, name, description, location, start_time, start_time_offset, end_time, end_time_offset)
-            VALUES (@id, @name, @description, @location, @start_time, @start_time_offset, @end_time, @end_time_offset)
-            ON CONFLICT (id)
+            $"""
+            INSERT INTO {EventsTableName}
+            (
+                {EventsTableIdColumnName},
+                {EventsTableNameColumnName},
+                {EventsTableDescriptionColumnName},
+                {EventsTableLocationColumnName},
+                {EventsTableStartTimeColumnName},
+                {EventsTableStartTimeOffsetColumnName},
+                {EventsTableEndTimeColumnName},
+                {EventsTableEndTimeOffsetColumnName}
+            )
+            VALUES
+            (
+                @{EventsTableIdColumnName},
+                @{EventsTableNameColumnName},
+                @{EventsTableDescriptionColumnName},
+                @{EventsTableLocationColumnName},
+                @{EventsTableStartTimeColumnName},
+                @{EventsTableStartTimeOffsetColumnName},
+                @{EventsTableEndTimeColumnName},
+                @{EventsTableEndTimeOffsetColumnName}
+            )
+            ON CONFLICT ({EventsTableIdColumnName})
             DO UPDATE SET
-                name = EXCLUDED.name,
-                description = EXCLUDED.description,
-                location = EXCLUDED.location,
-                start_time = EXCLUDED.start_time,
-                start_time_offset = EXCLUDED.start_time_offset,
-                end_time = EXCLUDED.end_time,
-                end_time_offset = EXCLUDED.end_time_offset
+                {EventsTableNameColumnName} = EXCLUDED.{EventsTableNameColumnName},
+                {EventsTableDescriptionColumnName} = EXCLUDED.{EventsTableDescriptionColumnName},
+                {EventsTableLocationColumnName} = EXCLUDED.{EventsTableLocationColumnName},
+                {EventsTableStartTimeColumnName} = EXCLUDED.{EventsTableStartTimeColumnName},
+                {EventsTableStartTimeOffsetColumnName} = EXCLUDED.{EventsTableStartTimeOffsetColumnName},
+                {EventsTableEndTimeColumnName} = EXCLUDED.{EventsTableEndTimeColumnName},
+                {EventsTableEndTimeOffsetColumnName} = EXCLUDED.{EventsTableEndTimeOffsetColumnName}
             """
         );
-        saveOrUpdateEventCommand.Parameters.AddWithValue("id", NpgsqlDbType.Uuid, Guid.Parse(@event.Id.ToString()));
-        saveOrUpdateEventCommand.Parameters.AddWithValue("name", NpgsqlDbType.Varchar, @event.Name.ToString());
-        saveOrUpdateEventCommand.Parameters.AddWithValue("description", NpgsqlDbType.Varchar, @event.Description.ToString());
-        saveOrUpdateEventCommand.Parameters.AddWithValue("location", NpgsqlDbType.Varchar, @event.Location.ToString());
-        saveOrUpdateEventCommand.Parameters.AddWithValue("start_time", NpgsqlDbType.Timestamp, @event.StartTime.Value.DateTime);
-        saveOrUpdateEventCommand.Parameters.AddWithValue("start_time_offset", NpgsqlDbType.Interval, @event.StartTime.Value.Offset);
-        saveOrUpdateEventCommand.Parameters.AddWithValue("end_time", NpgsqlDbType.Timestamp, @event.EndTime.Value.DateTime);
-        saveOrUpdateEventCommand.Parameters.AddWithValue("end_time_offset", NpgsqlDbType.Interval, @event.EndTime.Value.Offset);
+        saveOrUpdateEventCommand.Parameters.AddWithValue(EventsTableIdColumnName, NpgsqlDbType.Uuid, Guid.Parse(@event.Id.ToString()));
+        saveOrUpdateEventCommand.Parameters.AddWithValue(EventsTableNameColumnName, NpgsqlDbType.Varchar, @event.Name.ToString());
+        saveOrUpdateEventCommand.Parameters.AddWithValue(EventsTableDescriptionColumnName, NpgsqlDbType.Varchar, @event.Description.ToString());
+        saveOrUpdateEventCommand.Parameters.AddWithValue(EventsTableLocationColumnName, NpgsqlDbType.Varchar, @event.Location.ToString());
+        saveOrUpdateEventCommand.Parameters.AddWithValue(EventsTableStartTimeColumnName, NpgsqlDbType.Timestamp, @event.StartTime.Value.DateTime);
+        saveOrUpdateEventCommand.Parameters.AddWithValue(EventsTableStartTimeOffsetColumnName, NpgsqlDbType.Interval, @event.StartTime.Value.Offset);
+        saveOrUpdateEventCommand.Parameters.AddWithValue(EventsTableEndTimeColumnName, NpgsqlDbType.Timestamp, @event.EndTime.Value.DateTime);
+        saveOrUpdateEventCommand.Parameters.AddWithValue(EventsTableEndTimeOffsetColumnName, NpgsqlDbType.Interval, @event.EndTime.Value.Offset);
 
         await saveOrUpdateEventCommand.ExecuteNonQueryAsync(cancellationToken);
     }
@@ -94,24 +124,24 @@ internal sealed class Repository : IRepository
     private static EventEntity GetEvent(NpgsqlDataReader reader) =>
         EventEntity.Of
         (
-            new Id(reader.GetGuid(reader.GetOrdinal("id")).ToString()),
-            new Name(reader.GetString(reader.GetOrdinal("name"))),
-            new Description(reader.GetString(reader.GetOrdinal("description"))),
-            new Location(reader.GetString(reader.GetOrdinal("location"))),
+            new Id(reader.GetGuid(reader.GetOrdinal(EventsTableIdColumnName)).ToString()),
+            new Name(reader.GetString(reader.GetOrdinal(EventsTableNameColumnName))),
+            new Description(reader.GetString(reader.GetOrdinal(EventsTableDescriptionColumnName))),
+            new Location(reader.GetString(reader.GetOrdinal(EventsTableLocationColumnName))),
             StartTime.Of
             (
                 new DateTimeOffset
                 (
-                    reader.GetDateTime(reader.GetOrdinal("start_time")),
-                    reader.GetTimeSpan(reader.GetOrdinal("start_time_offset"))
+                    reader.GetDateTime(reader.GetOrdinal(EventsTableStartTimeColumnName)),
+                    reader.GetTimeSpan(reader.GetOrdinal(EventsTableStartTimeOffsetColumnName))
                 )
             ),
             EndTime.Of
             (
                 new DateTimeOffset
                 (
-                    reader.GetDateTime(reader.GetOrdinal("end_time")),
-                    reader.GetTimeSpan(reader.GetOrdinal("end_time_offset"))
+                    reader.GetDateTime(reader.GetOrdinal(EventsTableEndTimeColumnName)),
+                    reader.GetTimeSpan(reader.GetOrdinal(EventsTableEndTimeOffsetColumnName))
                 )
             )
         );

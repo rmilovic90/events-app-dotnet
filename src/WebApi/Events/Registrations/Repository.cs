@@ -11,6 +11,13 @@ namespace Events.WebApi.Events.Registrations;
 
 internal sealed class Repository : IRepository
 {
+    public const string RegistrationsTableName = "registrations";
+    public const string RegistrationsTableIdColumnName = "id";
+    public const string RegistrationsTableEventIdColumnName = "event_id";
+    public const string RegistrationsTableNameColumnName = "name";
+    public const string RegistrationsTablePhoneNumberColumnName = "phone_number";
+    public const string RegistrationsTableEmailAddressColumnName = "email_address";
+
     private readonly string _connectionString;
 
     public Repository(string connectionString)
@@ -27,8 +34,8 @@ internal sealed class Repository : IRepository
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(_connectionString);
 
         using NpgsqlCommand command = dataSource.CreateCommand();
-        command.CommandText = "SELECT * FROM registrations WHERE event_id = @eventId";
-        command.Parameters.AddWithValue("eventId", NpgsqlDbType.Uuid, idValue);
+        command.CommandText = $"SELECT * FROM {RegistrationsTableName} WHERE {RegistrationsTableEventIdColumnName} = @{RegistrationsTableEventIdColumnName}";
+        command.Parameters.AddWithValue(RegistrationsTableEventIdColumnName, NpgsqlDbType.Uuid, idValue);
 
         NpgsqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
 
@@ -41,11 +48,11 @@ internal sealed class Repository : IRepository
             (
                 RegistrationEntity.Of
                 (
-                    new Id(reader.GetGuid(reader.GetOrdinal("id")).ToString()),
-                    new Id(reader.GetGuid(reader.GetOrdinal("event_id")).ToString()),
-                    new Name(reader.GetString(reader.GetOrdinal("name"))),
-                    new PhoneNumber(reader.GetString(reader.GetOrdinal("phone_number"))),
-                    new EmailAddress(reader.GetString(reader.GetOrdinal("email_address")))
+                    new Id(reader.GetGuid(reader.GetOrdinal(RegistrationsTableIdColumnName)).ToString()),
+                    new Id(reader.GetGuid(reader.GetOrdinal(RegistrationsTableEventIdColumnName)).ToString()),
+                    new Name(reader.GetString(reader.GetOrdinal(RegistrationsTableNameColumnName))),
+                    new PhoneNumber(reader.GetString(reader.GetOrdinal(RegistrationsTablePhoneNumberColumnName))),
+                    new EmailAddress(reader.GetString(reader.GetOrdinal(RegistrationsTableEmailAddressColumnName)))
                 )
             );
         }
@@ -59,21 +66,35 @@ internal sealed class Repository : IRepository
 
         using NpgsqlCommand saveOrUpdateRegistrationsCommand = dataSource.CreateCommand
         (
-            """
-            INSERT INTO registrations (id, event_id, name, phone_number, email_address)
-            VALUES (@id, @event_id, @name, @phone_number, @email_address)
-            ON CONFLICT (id)
+            $"""
+            INSERT INTO {RegistrationsTableName}
+            (
+                {RegistrationsTableIdColumnName},
+                {RegistrationsTableEventIdColumnName},
+                {RegistrationsTableNameColumnName},
+                {RegistrationsTablePhoneNumberColumnName},
+                {RegistrationsTableEmailAddressColumnName}
+            )
+            VALUES
+            (
+                @{RegistrationsTableIdColumnName},
+                @{RegistrationsTableEventIdColumnName},
+                @{RegistrationsTableNameColumnName},
+                @{RegistrationsTablePhoneNumberColumnName},
+                @{RegistrationsTableEmailAddressColumnName}
+            )
+            ON CONFLICT ({RegistrationsTableIdColumnName})
             DO UPDATE SET
-                name = EXCLUDED.name,
-                phone_number = EXCLUDED.phone_number,
-                email_address = EXCLUDED.email_address
+                {RegistrationsTableNameColumnName} = EXCLUDED.{RegistrationsTableNameColumnName},
+                {RegistrationsTablePhoneNumberColumnName} = EXCLUDED.{RegistrationsTablePhoneNumberColumnName},
+                {RegistrationsTableEmailAddressColumnName} = EXCLUDED.{RegistrationsTableEmailAddressColumnName}
             """
         );
-        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue("id", NpgsqlDbType.Uuid, Guid.Parse(registration.Id.ToString()));
-        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue("event_id", NpgsqlDbType.Uuid, Guid.Parse(registration.EventId.ToString()));
-        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue("name", NpgsqlDbType.Varchar, registration.Name.ToString());
-        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue("phone_number", NpgsqlDbType.Varchar, registration.PhoneNumber.ToString());
-        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue("email_address", NpgsqlDbType.Varchar, registration.EmailAddress.ToString());
+        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue(RegistrationsTableIdColumnName, NpgsqlDbType.Uuid, Guid.Parse(registration.Id.ToString()));
+        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue(RegistrationsTableEventIdColumnName, NpgsqlDbType.Uuid, Guid.Parse(registration.EventId.ToString()));
+        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue(RegistrationsTableNameColumnName, NpgsqlDbType.Varchar, registration.Name.ToString());
+        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue(RegistrationsTablePhoneNumberColumnName, NpgsqlDbType.Varchar, registration.PhoneNumber.ToString());
+        saveOrUpdateRegistrationsCommand.Parameters.AddWithValue(RegistrationsTableEmailAddressColumnName, NpgsqlDbType.Varchar, registration.EmailAddress.ToString());
 
         await saveOrUpdateRegistrationsCommand.ExecuteNonQueryAsync(cancellationToken);
     }

@@ -6,6 +6,7 @@ using Testcontainers.PostgreSql;
 using Testcontainers.Xunit;
 
 using static Events.Domain.Events.EventEntityBuilder;
+using static Events.WebApi.Events.Repository;
 
 using EventEntity = Events.Domain.Events.Event;
 
@@ -105,14 +106,14 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
         Assert.True(reader.HasRows);
         Assert.Multiple
         (
-            () => Assert.Equal(eventToSave.Id.ToString(), reader.GetGuid(reader.GetOrdinal("id")).ToString()),
-            () => Assert.Equal(eventToSave.Name.ToString(), reader.GetString(reader.GetOrdinal("name"))),
-            () => Assert.Equal(eventToSave.Description.ToString(), reader.GetString(reader.GetOrdinal("description"))),
-            () => Assert.Equal(eventToSave.Location.ToString(), reader.GetString(reader.GetOrdinal("location"))),
-            () => Assert.Equal(eventToSave.StartTime.Value.DateTime, reader.GetDateTime(reader.GetOrdinal("start_time"))),
-            () => Assert.Equal(eventToSave.StartTime.Value.Offset, reader.GetTimeSpan(reader.GetOrdinal("start_time_offset"))),
-            () => Assert.Equal(eventToSave.EndTime.Value.DateTime, reader.GetDateTime(reader.GetOrdinal("end_time"))),
-            () => Assert.Equal(eventToSave.EndTime.Value.Offset, reader.GetTimeSpan(reader.GetOrdinal("end_time_offset")))
+            () => Assert.Equal(eventToSave.Id.ToString(), reader.GetGuid(reader.GetOrdinal(EventsTableIdColumnName)).ToString()),
+            () => Assert.Equal(eventToSave.Name.ToString(), reader.GetString(reader.GetOrdinal(EventsTableNameColumnName))),
+            () => Assert.Equal(eventToSave.Description.ToString(), reader.GetString(reader.GetOrdinal(EventsTableDescriptionColumnName))),
+            () => Assert.Equal(eventToSave.Location.ToString(), reader.GetString(reader.GetOrdinal(EventsTableLocationColumnName))),
+            () => Assert.Equal(eventToSave.StartTime.Value.DateTime, reader.GetDateTime(reader.GetOrdinal(EventsTableStartTimeColumnName))),
+            () => Assert.Equal(eventToSave.StartTime.Value.Offset, reader.GetTimeSpan(reader.GetOrdinal(EventsTableStartTimeOffsetColumnName))),
+            () => Assert.Equal(eventToSave.EndTime.Value.DateTime, reader.GetDateTime(reader.GetOrdinal(EventsTableEndTimeColumnName))),
+            () => Assert.Equal(eventToSave.EndTime.Value.Offset, reader.GetTimeSpan(reader.GetOrdinal(EventsTableEndTimeOffsetColumnName)))
         );
     }
 
@@ -129,7 +130,7 @@ public sealed class RepositoryTests(ITestOutputHelper testOutputHelper) : Contai
     private static async Task<NpgsqlDataReader> GetEvent(NpgsqlDataSource dataSource, EventEntity @event)
     {
         await using NpgsqlCommand getEventByIdQuery = dataSource.CreateCommand();
-        getEventByIdQuery.CommandText = $"SELECT * FROM events WHERE id = '{@event.Id}'";
+        getEventByIdQuery.CommandText = $"SELECT * FROM {EventsTableName} WHERE {EventsTableIdColumnName} = '{@event.Id}'";
 
         return await getEventByIdQuery.ExecuteReaderAsync(TestContext.Current.CancellationToken);
     }
